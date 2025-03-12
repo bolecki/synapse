@@ -23,7 +23,7 @@ defmodule Synapse.Accounts do
 
   """
   def get_user_by_email(email) when is_binary(email) do
-    Repo.get_by(User, email: email)
+    Repo.get_by(User, email: email) |> Repo.preload(:profile)
   end
 
   @doc """
@@ -40,7 +40,7 @@ defmodule Synapse.Accounts do
   """
   def get_user_by_email_and_password(email, password)
       when is_binary(email) and is_binary(password) do
-    user = Repo.get_by(User, email: email)
+    user = Repo.get_by(User, email: email) |> Repo.preload(:profile)
     if User.valid_password?(user, password), do: user
   end
 
@@ -58,7 +58,7 @@ defmodule Synapse.Accounts do
       ** (Ecto.NoResultsError)
 
   """
-  def get_user!(id), do: Repo.get!(User, id)
+  def get_user!(id), do: Repo.get!(User, id) |> Repo.preload(:profile)
 
   ## User registration
 
@@ -349,5 +349,107 @@ defmodule Synapse.Accounts do
       {:ok, %{user: user}} -> {:ok, user}
       {:error, :user, changeset, _} -> {:error, changeset}
     end
+  end
+
+  alias Synapse.Accounts.UserProfile
+
+  @doc """
+  Returns the list of profiles.
+
+  ## Examples
+
+      iex> list_profiles()
+      [%Profile{}, ...]
+
+  """
+  def list_profiles do
+    Repo.all(UserProfile)
+  end
+
+  @doc """
+  Gets a single profile.
+
+  Raises `Ecto.NoResultsError` if the Profile does not exist.
+
+  ## Examples
+
+      iex> get_profile!(123)
+      %Profile{}
+
+      iex> get_profile!(456)
+      ** (Ecto.NoResultsError)
+
+  """
+  def get_profile!(id), do: Repo.get!(UserProfile, id)
+
+  def get_profile_by_user_id!(user_id) do
+    from(p in UserProfile, where: p.user_id == ^user_id)
+    |> Repo.one!()
+  end
+
+
+  @doc """
+  Creates a profile.
+
+  ## Examples
+
+      iex> create_profile(%{field: value})
+      {:ok, %Profile{}}
+
+      iex> create_profile(%{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def create_profile(attrs \\ %{}) do
+    %UserProfile{}
+    |> UserProfile.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  @doc """
+  Updates a profile.
+
+  ## Examples
+
+      iex> update_profile(profile, %{field: new_value})
+      {:ok, %Profile{}}
+
+      iex> update_profile(profile, %{field: bad_value})
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def update_profile(%UserProfile{} = profile, attrs) do
+    profile
+    |> UserProfile.changeset(attrs)
+    |> Repo.update()
+  end
+
+  @doc """
+  Deletes a profile.
+
+  ## Examples
+
+      iex> delete_profile(profile)
+      {:ok, %Profile{}}
+
+      iex> delete_profile(profile)
+      {:error, %Ecto.Changeset{}}
+
+  """
+  def delete_profile(%UserProfile{} = profile) do
+    Repo.delete(profile)
+  end
+
+  @doc """
+  Returns an `%Ecto.Changeset{}` for tracking profile changes.
+
+  ## Examples
+
+      iex> change_profile(profile)
+      %Ecto.Changeset{data: %Profile{}}
+
+  """
+  def change_profile(%UserProfile{} = profile, attrs \\ %{}) do
+    UserProfile.changeset(profile, attrs)
   end
 end

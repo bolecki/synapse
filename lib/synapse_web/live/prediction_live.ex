@@ -1,8 +1,6 @@
 defmodule SynapseWeb.PredictionLive do
   use Phoenix.LiveView, layout: {SynapseWeb.Layouts, :app}
 
-  alias Phoenix.LiveView.JS
-
   @f1_drivers [
     "Carlos Sainz",
     "Lewis Hamilton",

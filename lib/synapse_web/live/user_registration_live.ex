@@ -56,6 +56,7 @@ defmodule SynapseWeb.UserRegistrationLive do
   def handle_event("save", %{"user" => user_params}, socket) do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
+        Accounts.create_profile(%{"name" => generate_username(), "user_id" => user.id})
         {:ok, _} =
           Accounts.deliver_user_confirmation_instructions(
             user,
@@ -83,5 +84,24 @@ defmodule SynapseWeb.UserRegistrationLive do
     else
       assign(socket, form: form)
     end
+  end
+
+  def generate_username() do
+    adjectives = ["Curious", "Fast", "Quantum", "Slow", "Blue", "Red", "Absolute", "Infinite"]
+    nouns = ["Blob", "Blobberson", "Lemon", "Monkey", "Slorp"]
+
+    adjective =
+      adjectives
+      |> Enum.take_random(1)
+      |> Enum.at(0)
+
+    noun =
+      nouns
+      |> Enum.take_random(1)
+      |> Enum.at(0)
+
+    modifier = Enum.random(1000..9999)
+
+    "#{adjective}#{noun}#{modifier}"
   end
 end

@@ -68,6 +68,7 @@ defmodule SynapseWeb.Router do
     live_session :require_authenticated_user,
       on_mount: [{SynapseWeb.UserAuth, :ensure_authenticated}] do
       live "/users/settings", UserSettingsLive, :edit
+      live "/users/profile", UserProfileLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
     end
   end
