@@ -15,11 +15,10 @@ defmodule SynapseWeb.UserProfileLive do
       <.simple_form
         for={@profile_form}
         id="profile-form"
-        phx-target={@myself}
         phx-change="validate"
         phx-submit="save"
       >
-        <.input field={@profile[:name]} type="text" label="Name" />
+        <.input field={@profile_form[:name]} type="text" label="Name" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Profile</.button>
         </:actions>
@@ -35,26 +34,28 @@ defmodule SynapseWeb.UserProfileLive do
     socket =
       socket
       |> assign(:profile_form, to_form(profile_changeset))
+      |> assign(:profile, user.profile)
 
     {:ok, socket}
   end
 
-  def handle_event("validate", %{"profile" => profile_params}, socket) do
+  def handle_event("validate", %{"user_profile" => profile_params}, socket) do
+    user = socket.assigns.current_user |> Repo.preload(:profile)
     changeset =
-      socket.assigns.user.profile
+      user.profile
       |> Accounts.change_profile(profile_params)
       |> Map.put(:action, :validate)
 
     {:noreply, assign(socket, profile_form: to_form(changeset))}
   end
 
-  def handle_event("save", %{"profile" => profile_params}, socket) do
-    case Accounts.update_profile(socket.assigns.user.profile, profile_params) do
+  def handle_event("save", %{"user_profile" => profile_params}, socket) do
+    user = socket.assigns.current_user |> Repo.preload(:profile)
+    case Accounts.update_profile(user.profile, profile_params) do
       {:ok, _profile} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Profile updated successfully")
-         |> push_patch(to: socket.assigns.patch)}
+         |> put_flash(:info, "Profile updated successfully")}
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:noreply, assign(socket, profile_form: to_form(changeset))}

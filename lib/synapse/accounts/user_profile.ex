@@ -13,7 +13,7 @@ defmodule Synapse.Accounts.UserProfile do
   @doc false
   def changeset(profile, attrs) do
     profile
-    |> cast(attrs, [:name, :admin, :user_id])
+    |> cast(attrs, [:name, :user_id])
     |> validate_required([:name, :user_id])
     |> unique_constraint(:name)
     |> unique_constraint(:user_id)
