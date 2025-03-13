@@ -26,7 +26,7 @@ defmodule SynapseWeb.ListComponent do
                     ]}
                 />
               </button>
-              <div class="flex-auto block text-sm leading-6 text-zinc-900">
+              <div class={"flex-auto block text-sm leading-6 text-zinc-900 #{if(item.position > 10, do: 'bg-red-100', else: '')}"}>
                 <%= item.name %>
               </div>
             </div>
@@ -41,10 +41,19 @@ defmodule SynapseWeb.ListComponent do
     {:ok, assign(socket, assigns)}
   end
 
+  def move_item(list, from_index, to_index) do
+    item = Enum.at(list, from_index)
+    list
+    |> List.delete_at(from_index)
+    |> List.insert_at(to_index, item)
+    |> Enum.with_index()
+    |> Enum.map(fn {item, index} ->
+      Map.put(item, :position, index)
+    end)
+  end
+
   def handle_event("reposition", params, socket) do
-    #Put your logic here to deal with the changes to the list order
-    #and persist the data
     IO.inspect(params)
-    {:noreply, socket}
+    {:noreply, assign(socket, list: move_item(socket.assigns.list, params["old"], params["new"]))}
   end
 end
