@@ -21,11 +21,32 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
+import Sortable from "../vendor/Sortable";
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
+
+let Hooks = {}
+
+Hooks.Sortable = {
+  mounted(){
+    let sorter = new Sortable(this.el, {
+      animation: 150,
+      delay: 100,
+      dragClass: "drag-item",
+      ghostClass: "drag-ghost",
+      forceFallback: true,
+      onEnd: e => {
+        let params = {old: e.oldIndex, new: e.newIndex, ...e.item.dataset}
+        this.pushEventTo(this.el, "reposition", params)
+      }
+    })
+  }
+}
+
 let liveSocket = new LiveSocket("/live", Socket, {
   longPollFallbackMs: 2500,
-  params: {_csrf_token: csrfToken}
+  params: {_csrf_token: csrfToken},
+  hooks: Hooks
 })
 
 // Show progress bar on live navigation and form submits

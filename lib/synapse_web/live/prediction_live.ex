@@ -1,103 +1,42 @@
 defmodule SynapseWeb.PredictionLive do
-  use Phoenix.LiveView, layout: {SynapseWeb.Layouts, :app}
-
-  @f1_drivers [
-    "Carlos Sainz",
-    "Lewis Hamilton",
-    "Max Verstappen",
-    "Sergio Pérez",
-    "Fernando Alonso",
-    "George Russell",
-    "Lance Stroll",
-    "Kevin Magnussen",
-    "Yuki Tsunoda",
-    "Esteban Ocon"
-  ]
+  use SynapseWeb, :live_view
 
   def mount(_params, _session, socket) do
-    IO.inspect(@f1_drivers, label: "F1 Drivers")
-    {:ok, assign(socket, f1_drivers: @f1_drivers, rankings: [])}
-  end
+    list = [
+      %{name: "Lewis Hamilton", id: 0, position: 0, team_color: "red-600"},
+      %{name: "Charles Leclerc", id: 1, position: 1, team_color: "red-600"},
+      %{name: "Max Verstappen", id: 2, position: 2, team_color: "blue-600"},
+      %{name: "Liam Lawson", id: 3, position: 3, team_color: "blue-600"},
+      %{name: "Lando Norris", id: 4, position: 4, team_color: "orange-500"},
+      %{name: "Oscar Piastri", id: 5, position: 5, team_color: "orange-500"},
+      %{name: "George Russell", id: 6, position: 6, team_color: "teal-400"},
+      %{name: "Kimi Antonelli", id: 7, position: 7, team_color: "teal-400"},
+      %{name: "Pierre Gasly", id: 8, position: 8, team_color: "sky-600"},
+      %{name: "Jack Doohan", id: 9, position: 9, team_color: "sky-600"},
+      %{name: "Fernando Alonso", id: 10, position: 10, team_color: "emerald-600"},
+      %{name: "Lance Stroll", id: 11, position: 11, team_color: "emerald-600"},
+      %{name: "Nico Hulkenberg", id: 12, position: 12, team_color: "green-400"},
+      %{name: "Gabriel Bortoleto", id: 13, position: 13, team_color: "green-400"},
+      %{name: "Esteban Ocon", id: 14, position: 14, team_color: "gray-400"},
+      %{name: "Oliver Bearman", id: 15, position: 15, team_color: "gray-400"},
+      %{name: "Yuki Tsunoda", id: 16, position: 16, team_color: "blue-400"},
+      %{name: "Isack Hadjar", id: 17, position: 17, team_color: "blue-400"},
+      %{name: "Alex Albon", id: 18, position: 18, team_color: "sky-300"},
+      %{name: "Carlos Sainz", id: 19, position: 19, team_color: "sky-300"},
+    ]
 
-  def handle_params(params, _uri, socket) do
-    rankings = Enum.map(params, fn {_, rank} -> String.to_integer(rank) end)
-    IO.inspect(rankings, label: "Rankings")
-    {:noreply, assign(socket, rankings: rankings)}
-  end
-
-  def handle_event("update_rankings", %{"order" => order}, socket) do
-    new_socket =
-      socket
-      |> update(:rankings, fn _ -> Enum.map(order, &String.to_integer/1) end)
-      |> push_event("ranking_updated", %{order: order})
-
-    {:noreply, new_socket}
+    {:ok, assign(socket, prediction_list: list)}
   end
 
   def render(assigns) do
     ~H"""
-    <div class="container mx-auto p-4">
-      <h1 class="text-3xl font-bold mb-6">F1 Race Prediction</h1>
-
-      <div class="grid grid-cols-2 gap-4">
-        <div class="border p-4 rounded-lg shadow">
-          <h2 class="font-semibold mb-4">Your Prediction</h2>
-          <div id="prediction-area"
-               class="space-y-2 cursor-move"
-               phx-sortable>
-            <%= for driver <- @f1_drivers do %>
-              <button
-                id={"driver-#{driver}"}
-                class="px-4 py-2 bg-blue-500 text-white rounded-full shadow-sm hover:bg-blue-600 transition-colors">
-                #{driver}
-              </button>
-            <% end %>
-          </div>
-        </div>
-
-        <div class="border p-4 rounded-lg shadow">
-          <h2 class="font-semibold mb-4">Available Drivers</h2>
-          <div id="available-drivers"
-               class="space-y-2 cursor-move"
-               phx-sortable-source>
-            <%= for driver <- @f1_drivers do %>
-              <button
-                id={"driver-#{driver}"}
-                class="px-4 py-2 bg-gray-500 text-white rounded-full shadow-sm hover:bg-gray-600 transition-colors">
-                #{driver}
-              </button>
-            <% end %>
-          </div>
-        </div>
-      </div>
-
-      <script>
-        document.addEventListener("DOMContentLoaded", function() {
-          const predictionArea = document.getElementById('prediction-area');
-          new Sortable(predictionArea, {
-            group: 'shared',
-            animation: 150,
-            onSort: function(evt) {
-              const order = Array.from(predictionArea.children).map(child =>
-                parseInt(child.id.split('-')[1])
-              );
-              sendEvent('update_rankings', {order: order});
-            }
-          });
-
-          const availableDrivers = document.getElementById('available-drivers');
-          new Sortable(availableDrivers, {
-            group: 'shared',
-            animation: 150,
-            onSort: function(evt) {
-              const order = Array.from(availableDrivers.children).map(child =>
-                parseInt(child.id.split('-')[1])
-              );
-              sendEvent('update_rankings', {order: order});
-            }
-          });
-        });
-      </script>
+    <div id="lists" class="grid sm:grid-cols-1 md:grid-cols-3 gap-2">
+      <.live_component
+        id="1"
+        module={SynapseWeb.ListComponent}
+        list={@prediction_list}
+        list_name="Prediction list"
+      />
     </div>
     """
   end
