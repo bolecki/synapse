@@ -59,12 +59,9 @@ defmodule SynapseWeb.PredictionLive do
 
     case existing_predictions do
       [] ->
-        IO.puts("no existing predictions")
         default
 
       _ ->
-        IO.puts("found existing predictions")
-
         existing_predictions
         |> Enum.map(fn prediction ->
           %{
