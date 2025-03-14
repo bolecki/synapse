@@ -17,11 +17,12 @@ defmodule SynapseWeb.ListComponent do
             data-id={item.id}
           >
             <div class="flex">
-              <button type="button" class="w-10">
+              <button type="button" class="w-14 flex items-center">
+                <span class="w-5 text-right mr-1 font-semibold"><%= item.position + 1 %></span>
                 <.icon
                   name="hero-arrows-up-down"
                   class={[
-                    "w-7 h-7",
+                    "w-7 h-7 flex-shrink-0",
                     "bg-#{item.team_color}"
                     ]}
                 />
