@@ -2,6 +2,8 @@ defmodule SynapseWeb.ListComponent do
   use SynapseWeb, :live_component
 
   alias Synapse.Admin.RankedPrediction
+  alias Synapse.Repo
+  alias Ecto.Multi
 
   def render(assigns) do
     ~H"""
@@ -73,14 +75,33 @@ defmodule SynapseWeb.ListComponent do
   end
 
   def handle_event("save", _params, socket) do
-    socket.assigns.list
-    |> Enum.map(fn prediction ->
-      %RankedPrediction{
-        name: prediction.name,
-        position: prediction.position + 1,
-        event_id: socket.assigns.event.id
-      }
-    end)
-    {:noreply, socket}
+    multi =
+      socket.assigns.list
+      |> Enum.with_index()
+      |> Enum.reduce(Multi.new(), fn {prediction, index}, multi ->
+        changeset =
+          %RankedPrediction{
+            name: prediction.name,
+            position: prediction.position + 1,
+            event_id: socket.assigns.event.id,
+            user_id: socket.assigns.user.id
+          }
+          |> RankedPrediction.changeset(%{})
+
+        Multi.insert(
+          multi,
+          "prediction_#{index}",
+          changeset,
+          on_conflict: {:replace, [:position]},
+          conflict_target: [:user_id, :event_id, :name]
+        )
+      end)
+
+    case Repo.transaction(multi) do
+      {:ok, _} ->
+        {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
+      {:error, _, changeset, _} ->
+        {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
+    end
   end
 end

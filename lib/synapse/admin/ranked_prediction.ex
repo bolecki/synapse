@@ -7,6 +7,7 @@ defmodule Synapse.Admin.RankedPrediction do
     field :position, :integer
 
     belongs_to :event, Synapse.Admin.Event
+    belongs_to :user, Synapse.Accounts.User
 
     timestamps(type: :utc_datetime)
   end

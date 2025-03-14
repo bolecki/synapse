@@ -3,6 +3,29 @@ defmodule SynapseWeb.PredictionLive do
 
   alias Synapse.Admin
 
+  @color_lookup %{
+    "Lewis Hamilton" => "red-600",
+    "Charles Leclerc" => "red-600",
+    "Max Verstappen" => "blue-600",
+    "Liam Lawson" => "blue-600",
+    "Lando Norris" => "orange-500",
+    "Oscar Piastri" => "orange-500",
+    "George Russell" => "teal-400",
+    "Kimi Antonelli" => "teal-400",
+    "Pierre Gasly" => "sky-600",
+    "Jack Doohan" => "sky-600",
+    "Fernando Alonso" => "emerald-600",
+    "Lance Stroll" => "emerald-600",
+    "Nico Hulkenberg" => "green-400",
+    "Gabriel Bortoleto" => "green-400",
+    "Esteban Ocon" => "gray-400",
+    "Oliver Bearman" => "gray-400",
+    "Yuki Tsunoda" => "blue-400",
+    "Isack Hadjar" => "blue-400",
+    "Alex Albon" => "sky-300",
+    "Carlos Sainz" => "sky-300",
+  }
+
   @impl true
   def mount(_params, _session, socket) do
     list = [
@@ -31,18 +54,33 @@ defmodule SynapseWeb.PredictionLive do
     {:ok, assign(socket, prediction_list: list)}
   end
 
+  def get_predictions(user, event, default) do
+    existing_predictions = Admin.get_ranked_predictions_for_user_event!(user.id, event.id)
+    case existing_predictions do
+      [] ->
+        IO.puts("no existing predictions")
+        default
+      _ ->
+        IO.puts("found existing predictions")
+        existing_predictions |> Enum.map(fn prediction -> %{name: prediction.name, id: prediction.position - 1, position: prediction.position - 1, team_color: @color_lookup[prediction.name]} end) |> Enum.sort(&(&1.position < &2.position))
+    end
+  end
+
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
+    event = Admin.get_event!(id)
     {:noreply,
      socket
-     |> assign(:event, Admin.get_event!(id))}
+     |> assign(event: event, prediction_list: get_predictions(socket.assigns.current_user, event, socket.assigns.prediction_list))}
   end
 
   @impl true
   def handle_params(_params, _, socket) do
+    event = Admin.get_latest_event!()
+
     {:noreply,
      socket
-     |> assign(:event, Admin.get_latest_event!())}
+     |> assign(event: event, prediction_list: get_predictions(socket.assigns.current_user, event, socket.assigns.prediction_list))}
   end
 
   @impl true
@@ -55,6 +93,7 @@ defmodule SynapseWeb.PredictionLive do
         list={@prediction_list}
         list_name={"#{@event.name} #{@event.season.name}"}
         event={@event}
+        user={@current_user}
       />
     </div>
     """

@@ -21,8 +21,6 @@ defmodule SynapseWeb.Router do
     pipe_through :browser
 
     live "/", PageLive, :index
-    live "/f1-prediction", PredictionLive, :index
-    live "/f1-prediction/:id", PredictionLive, :index
   end
 
   # Other scopes may use custom stacks.
@@ -71,6 +69,9 @@ defmodule SynapseWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/profile", UserProfileLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+
+      live "/f1-prediction", PredictionLive, :index
+      live "/f1-prediction/:id", PredictionLive, :index
 
       live "/categories", CategoryLive.Index, :index
       live "/categories/new", CategoryLive.Index, :new

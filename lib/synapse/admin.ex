@@ -295,4 +295,10 @@ defmodule Synapse.Admin do
   def change_event(%Event{} = event, attrs \\ %{}) do
     Event.changeset(event, attrs)
   end
+
+  alias Synapse.Admin.RankedPrediction
+
+  def get_ranked_predictions_for_user_event!(user_id, event_id) do
+    Repo.all(from r in RankedPrediction, where: r.user_id == ^user_id and r.event_id == ^event_id)
+  end
 end
