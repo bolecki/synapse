@@ -36,10 +36,11 @@ defmodule SynapseWeb.ListComponent do
           for={%{}}
           phx-submit="save"
           phx-target={@myself}
+          class="bg-transparent"
         >
           <:actions>
-            <div class="mt-4 w-full">
-              <.button type="submit" class="w-full bg-blue-600">Save</.button>
+            <div class="w-full">
+              <.button type="submit" class="w-full !bg-blue-600">Save</.button>
             </div>
           </:actions>
         </.simple_form>
