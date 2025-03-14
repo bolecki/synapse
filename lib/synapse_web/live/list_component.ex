@@ -1,6 +1,8 @@
 defmodule SynapseWeb.ListComponent do
   use SynapseWeb, :live_component
 
+  alias Synapse.Admin.RankedPrediction
+
   def render(assigns) do
     ~H"""
     <div class="bg-gray-100 py-4 rounded-lg">
@@ -71,6 +73,14 @@ defmodule SynapseWeb.ListComponent do
   end
 
   def handle_event("save", _params, socket) do
+    socket.assigns.list
+    |> Enum.map(fn prediction ->
+      %RankedPrediction{
+        name: prediction.name,
+        position: prediction.position + 1,
+        event_id: socket.assigns.event.id
+      }
+    end)
     {:noreply, socket}
   end
 end

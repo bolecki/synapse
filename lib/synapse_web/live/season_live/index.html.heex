@@ -1,0 +1,43 @@
+<.header>
+  Listing Seasons
+  <:actions>
+    <.link patch={~p"/seasons/new"}>
+      <.button>New Season</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.table
+  id="seasons"
+  rows={@streams.seasons}
+  row_click={fn {_id, season} -> JS.navigate(~p"/seasons/#{season}") end}
+>
+  <:col :let={{_id, season}} label="ID">{season.id}</:col>
+  <:col :let={{_id, season}} label="Name">{season.name}</:col>
+  <:col :let={{_id, season}} label="Category ID">{season.category_id}</:col>
+  <:action :let={{_id, season}}>
+    <div class="sr-only">
+      <.link navigate={~p"/seasons/#{season}"}>Show</.link>
+    </div>
+    <.link patch={~p"/seasons/#{season}/edit"}>Edit</.link>
+  </:action>
+  <:action :let={{id, season}}>
+    <.link
+      phx-click={JS.push("delete", value: %{id: season.id}) |> hide("##{id}")}
+      data-confirm="Are you sure?"
+    >
+      Delete
+    </.link>
+  </:action>
+</.table>
+
+<.modal :if={@live_action in [:new, :edit]} id="season-modal" show on_cancel={JS.patch(~p"/seasons")}>
+  <.live_component
+    module={SynapseWeb.SeasonLive.FormComponent}
+    id={@season.id || :new}
+    title={@page_title}
+    action={@live_action}
+    season={@season}
+    patch={~p"/seasons"}
+  />
+</.modal>

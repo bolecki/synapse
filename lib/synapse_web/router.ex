@@ -22,6 +22,7 @@ defmodule SynapseWeb.Router do
 
     live "/", PageLive, :index
     live "/f1-prediction", PredictionLive, :index
+    live "/f1-prediction/:id", PredictionLive, :index
   end
 
   # Other scopes may use custom stacks.
@@ -70,6 +71,27 @@ defmodule SynapseWeb.Router do
       live "/users/settings", UserSettingsLive, :edit
       live "/users/profile", UserProfileLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
+
+      live "/categories", CategoryLive.Index, :index
+      live "/categories/new", CategoryLive.Index, :new
+      live "/categories/:id/edit", CategoryLive.Index, :edit
+
+      live "/categories/:id", CategoryLive.Show, :show
+      live "/categories/:id/show/edit", CategoryLive.Show, :edit
+
+      live "/seasons", SeasonLive.Index, :index
+      live "/seasons/new", SeasonLive.Index, :new
+      live "/seasons/:id/edit", SeasonLive.Index, :edit
+
+      live "/seasons/:id", SeasonLive.Show, :show
+      live "/seasons/:id/show/edit", SeasonLive.Show, :edit
+
+      live "/events", EventLive.Index, :index
+      live "/events/new", EventLive.Index, :new
+      live "/events/:id/edit", EventLive.Index, :edit
+
+      live "/events/:id", EventLive.Show, :show
+      live "/events/:id/show/edit", EventLive.Show, :edit
     end
   end
 

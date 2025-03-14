@@ -1,6 +1,9 @@
 defmodule SynapseWeb.PredictionLive do
   use SynapseWeb, :live_view
 
+  alias Synapse.Admin
+
+  @impl true
   def mount(_params, _session, socket) do
     list = [
       %{name: "Lewis Hamilton", id: 0, position: 0, team_color: "red-600"},
@@ -28,6 +31,21 @@ defmodule SynapseWeb.PredictionLive do
     {:ok, assign(socket, prediction_list: list)}
   end
 
+  @impl true
+  def handle_params(%{"id" => id}, _, socket) do
+    {:noreply,
+     socket
+     |> assign(:event, Admin.get_event!(id))}
+  end
+
+  @impl true
+  def handle_params(_params, _, socket) do
+    {:noreply,
+     socket
+     |> assign(:event, Admin.get_latest_event!())}
+  end
+
+  @impl true
   def render(assigns) do
     ~H"""
     <div id="lists" class="grid sm:grid-cols-1 md:grid-cols-3 gap-2">
@@ -35,7 +53,8 @@ defmodule SynapseWeb.PredictionLive do
         id="1"
         module={SynapseWeb.ListComponent}
         list={@prediction_list}
-        list_name="Prediction list"
+        list_name={"#{@event.name} #{@event.season.name}"}
+        event={@event}
       />
     </div>
     """

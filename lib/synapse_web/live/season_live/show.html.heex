@@ -1,0 +1,26 @@
+<.header>
+  Season {@season.id}
+  <:subtitle>This is a season record from your database.</:subtitle>
+  <:actions>
+    <.link patch={~p"/seasons/#{@season}/show/edit"} phx-click={JS.push_focus()}>
+      <.button>Edit season</.button>
+    </.link>
+  </:actions>
+</.header>
+
+<.list>
+  <:item title="Name">{@season.name}</:item>
+</.list>
+
+<.back navigate={~p"/seasons"}>Back to seasons</.back>
+
+<.modal :if={@live_action == :edit} id="season-modal" show on_cancel={JS.patch(~p"/seasons/#{@season}")}>
+  <.live_component
+    module={SynapseWeb.SeasonLive.FormComponent}
+    id={@season.id}
+    title={@page_title}
+    action={@live_action}
+    season={@season}
+    patch={~p"/seasons/#{@season}"}
+  />
+</.modal>
