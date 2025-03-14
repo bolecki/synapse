@@ -104,7 +104,7 @@ defmodule SynapseWeb.PredictionLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div id="lists" class="grid sm:grid-cols-1 md:grid-cols-3 gap-2">
+    <div id="lists" class="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
       <.live_component
         id="1"
         module={SynapseWeb.ListComponent}
