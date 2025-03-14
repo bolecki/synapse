@@ -38,8 +38,8 @@ defmodule SynapseWeb.ListComponent do
           phx-target={@myself}
         >
           <:actions>
-            <div class="mt-4 flex items-center gap-4">
-              <.button type="submit" class="bg-blue-600">Save</.button>
+            <div class="mt-4 w-full">
+              <.button type="submit" class="w-full bg-blue-600">Save</.button>
             </div>
           </:actions>
         </.simple_form>
