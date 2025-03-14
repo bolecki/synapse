@@ -46,10 +46,15 @@ defmodule SynapseWeb.RankedPredictionLiveTest do
       assert html =~ "some name"
     end
 
-    test "updates ranked_prediction in listing", %{conn: conn, ranked_prediction: ranked_prediction} do
+    test "updates ranked_prediction in listing", %{
+      conn: conn,
+      ranked_prediction: ranked_prediction
+    } do
       {:ok, index_live, _html} = live(conn, ~p"/ranked_predictions")
 
-      assert index_live |> element("#ranked_predictions-#{ranked_prediction.id} a", "Edit") |> render_click() =~
+      assert index_live
+             |> element("#ranked_predictions-#{ranked_prediction.id} a", "Edit")
+             |> render_click() =~
                "Edit Ranked prediction"
 
       assert_patch(index_live, ~p"/ranked_predictions/#{ranked_prediction}/edit")
@@ -69,10 +74,16 @@ defmodule SynapseWeb.RankedPredictionLiveTest do
       assert html =~ "some updated name"
     end
 
-    test "deletes ranked_prediction in listing", %{conn: conn, ranked_prediction: ranked_prediction} do
+    test "deletes ranked_prediction in listing", %{
+      conn: conn,
+      ranked_prediction: ranked_prediction
+    } do
       {:ok, index_live, _html} = live(conn, ~p"/ranked_predictions")
 
-      assert index_live |> element("#ranked_predictions-#{ranked_prediction.id} a", "Delete") |> render_click()
+      assert index_live
+             |> element("#ranked_predictions-#{ranked_prediction.id} a", "Delete")
+             |> render_click()
+
       refute has_element?(index_live, "#ranked_predictions-#{ranked_prediction.id}")
     end
   end
@@ -87,7 +98,10 @@ defmodule SynapseWeb.RankedPredictionLiveTest do
       assert html =~ ranked_prediction.name
     end
 
-    test "updates ranked_prediction within modal", %{conn: conn, ranked_prediction: ranked_prediction} do
+    test "updates ranked_prediction within modal", %{
+      conn: conn,
+      ranked_prediction: ranked_prediction
+    } do
       {:ok, show_live, _html} = live(conn, ~p"/ranked_predictions/#{ranked_prediction}")
 
       assert show_live |> element("a", "Edit") |> render_click() =~

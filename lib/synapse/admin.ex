@@ -229,7 +229,11 @@ defmodule Synapse.Admin do
   """
   def get_event!(id), do: Repo.get!(Event, id) |> Repo.preload(:season)
 
-  def get_latest_event!(), do: Repo.all(from r in Event, order_by: [desc: r.id], limit: 1) |> Repo.preload(:season) |> Enum.at(0)
+  def get_latest_event!(),
+    do:
+      Repo.all(from r in Event, order_by: [desc: r.id], limit: 1)
+      |> Repo.preload(:season)
+      |> Enum.at(0)
 
   @doc """
   Creates a event.

@@ -8,41 +8,35 @@ defmodule SynapseWeb.ListComponent do
   def render(assigns) do
     ~H"""
     <div class="bg-gray-100 py-4 rounded-lg">
-      <div style="display:none;" class="bg-red-600 bg-blue-600 bg-orange-500 bg-teal-400 bg-sky-600 bg-emerald-600 bg-green-400 bg-gray-400 bg-blue-400 bg-sky-300"></div>
+      <div
+        style="display:none;"
+        class="bg-red-600 bg-blue-600 bg-orange-500 bg-teal-400 bg-sky-600 bg-emerald-600 bg-green-400 bg-gray-400 bg-blue-400 bg-sky-300"
+      >
+      </div>
       <div class="space-y-5 mx-auto max-w-7xl px-4 space-y-4">
         <.header>
-          <%= @list_name %>
+          {@list_name}
         </.header>
         <div id={"#{@id}-items"} phx-hook="Sortable" data-list_id={@id}>
-          <div
-            :for={item <- @list}
-            id={"#{@id}-#{item.id}"}
-            class="..."
-            data-id={item.id}
-          >
+          <div :for={item <- @list} id={"#{@id}-#{item.id}"} class="..." data-id={item.id}>
             <div class="flex">
               <button type="button" class="w-14 flex items-center">
-                <span class="w-5 text-right mr-1 font-semibold"><%= item.position + 1 %></span>
+                <span class="w-5 text-right mr-1 font-semibold">{item.position + 1}</span>
                 <.icon
                   name="hero-arrows-up-down"
                   class={[
                     "w-7 h-7 flex-shrink-0",
                     "bg-#{item.team_color}"
-                    ]}
+                  ]}
                 />
               </button>
               <div class={"flex-auto block text-sm leading-6 text-zinc-900 #{if(item.position > 10, do: 'bg-red-100', else: '')}"}>
-                <%= item.name %>
+                {item.name}
               </div>
             </div>
           </div>
         </div>
-        <.simple_form
-          for={%{}}
-          phx-submit="save"
-          phx-target={@myself}
-          class="bg-transparent"
-        >
+        <.simple_form for={%{}} phx-submit="save" phx-target={@myself} class="bg-transparent">
           <:actions>
             <div class="w-full">
               <.button type="submit" class="w-full !bg-blue-600">Save</.button>
@@ -60,6 +54,7 @@ defmodule SynapseWeb.ListComponent do
 
   def move_item(list, from_index, to_index) do
     item = Enum.at(list, from_index)
+
     list
     |> List.delete_at(from_index)
     |> List.insert_at(to_index, item)
@@ -100,6 +95,7 @@ defmodule SynapseWeb.ListComponent do
     case Repo.transaction(multi) do
       {:ok, _} ->
         {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
+
       {:error, _, changeset, _} ->
         {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
     end

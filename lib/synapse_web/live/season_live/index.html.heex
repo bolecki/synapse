@@ -31,7 +31,12 @@
   </:action>
 </.table>
 
-<.modal :if={@live_action in [:new, :edit]} id="season-modal" show on_cancel={JS.patch(~p"/seasons")}>
+<.modal
+  :if={@live_action in [:new, :edit]}
+  id="season-modal"
+  show
+  on_cancel={JS.patch(~p"/seasons")}
+>
   <.live_component
     module={SynapseWeb.SeasonLive.FormComponent}
     id={@season.id || :new}

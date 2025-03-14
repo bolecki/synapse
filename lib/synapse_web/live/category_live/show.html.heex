@@ -14,7 +14,12 @@
 
 <.back navigate={~p"/categories"}>Back to categories</.back>
 
-<.modal :if={@live_action == :edit} id="category-modal" show on_cancel={JS.patch(~p"/categories/#{@category}")}>
+<.modal
+  :if={@live_action == :edit}
+  id="category-modal"
+  show
+  on_cancel={JS.patch(~p"/categories/#{@category}")}
+>
   <.live_component
     module={SynapseWeb.CategoryLive.FormComponent}
     id={@category.id}

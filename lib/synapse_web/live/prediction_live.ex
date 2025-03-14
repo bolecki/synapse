@@ -23,7 +23,7 @@ defmodule SynapseWeb.PredictionLive do
     "Yuki Tsunoda" => "blue-400",
     "Isack Hadjar" => "blue-400",
     "Alex Albon" => "sky-300",
-    "Carlos Sainz" => "sky-300",
+    "Carlos Sainz" => "sky-300"
   }
 
   @impl true
@@ -48,7 +48,7 @@ defmodule SynapseWeb.PredictionLive do
       %{name: "Yuki Tsunoda", id: 16, position: 16, team_color: "blue-400"},
       %{name: "Isack Hadjar", id: 17, position: 17, team_color: "blue-400"},
       %{name: "Alex Albon", id: 18, position: 18, team_color: "sky-300"},
-      %{name: "Carlos Sainz", id: 19, position: 19, team_color: "sky-300"},
+      %{name: "Carlos Sainz", id: 19, position: 19, team_color: "sky-300"}
     ]
 
     {:ok, assign(socket, prediction_list: list)}
@@ -56,22 +56,39 @@ defmodule SynapseWeb.PredictionLive do
 
   def get_predictions(user, event, default) do
     existing_predictions = Admin.get_ranked_predictions_for_user_event!(user.id, event.id)
+
     case existing_predictions do
       [] ->
         IO.puts("no existing predictions")
         default
+
       _ ->
         IO.puts("found existing predictions")
-        existing_predictions |> Enum.map(fn prediction -> %{name: prediction.name, id: prediction.position - 1, position: prediction.position - 1, team_color: @color_lookup[prediction.name]} end) |> Enum.sort(&(&1.position < &2.position))
+
+        existing_predictions
+        |> Enum.map(fn prediction ->
+          %{
+            name: prediction.name,
+            id: prediction.position - 1,
+            position: prediction.position - 1,
+            team_color: @color_lookup[prediction.name]
+          }
+        end)
+        |> Enum.sort(&(&1.position < &2.position))
     end
   end
 
   @impl true
   def handle_params(%{"id" => id}, _, socket) do
     event = Admin.get_event!(id)
+
     {:noreply,
      socket
-     |> assign(event: event, prediction_list: get_predictions(socket.assigns.current_user, event, socket.assigns.prediction_list))}
+     |> assign(
+       event: event,
+       prediction_list:
+         get_predictions(socket.assigns.current_user, event, socket.assigns.prediction_list)
+     )}
   end
 
   @impl true
@@ -80,7 +97,11 @@ defmodule SynapseWeb.PredictionLive do
 
     {:noreply,
      socket
-     |> assign(event: event, prediction_list: get_predictions(socket.assigns.current_user, event, socket.assigns.prediction_list))}
+     |> assign(
+       event: event,
+       prediction_list:
+         get_predictions(socket.assigns.current_user, event, socket.assigns.prediction_list)
+     )}
   end
 
   @impl true

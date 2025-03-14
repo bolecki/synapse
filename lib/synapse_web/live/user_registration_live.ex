@@ -57,6 +57,7 @@ defmodule SynapseWeb.UserRegistrationLive do
     case Accounts.register_user(user_params) do
       {:ok, user} ->
         Accounts.create_profile(%{"name" => generate_username(), "user_id" => user.id})
+
         {:ok, _} =
           Accounts.deliver_user_confirmation_instructions(
             user,

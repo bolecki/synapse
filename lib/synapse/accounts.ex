@@ -387,7 +387,6 @@ defmodule Synapse.Accounts do
     |> Repo.one!()
   end
 
-
   @doc """
   Creates a profile.
 
