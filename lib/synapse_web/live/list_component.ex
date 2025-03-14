@@ -32,6 +32,17 @@ defmodule SynapseWeb.ListComponent do
             </div>
           </div>
         </div>
+        <.simple_form
+          for={%{}}
+          phx-submit="save"
+          phx-target={@myself}
+        >
+          <:actions>
+            <div class="mt-4 flex items-center gap-4">
+              <.button type="submit" class="bg-blue-600">Save</.button>
+            </div>
+          </:actions>
+        </.simple_form>
       </div>
     </div>
     """
@@ -55,5 +66,9 @@ defmodule SynapseWeb.ListComponent do
   def handle_event("reposition", params, socket) do
     IO.inspect(params)
     {:noreply, assign(socket, list: move_item(socket.assigns.list, params["old"], params["new"]))}
+  end
+
+  def handle_event("save", _params, socket) do
+    {:noreply, socket}
   end
 end
