@@ -84,6 +84,8 @@ defmodule SynapseWeb.Router do
       live "/seasons/new", SeasonLive.Index, :new
       live "/seasons/:id/edit", SeasonLive.Index, :edit
 
+      live "/season/:id", SeasonEventsLive, :index
+
       live "/seasons/:id", SeasonLive.Show, :show
       live "/seasons/:id/show/edit", SeasonLive.Show, :edit
 

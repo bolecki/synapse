@@ -32,11 +32,16 @@ defmodule SynapseWeb.ListComponent do
               </button>
               <div class={[
                 "flex-auto block text-sm leading-6",
-                if(item.position > 10, do: "text-zinc-400 italic bg-gray-50 border-l-4 border-gray-300 pl-2", else: "text-zinc-900")
+                if(item.position > 10,
+                  do: "text-zinc-400 italic bg-gray-50 border-l-4 border-gray-300 pl-2",
+                  else: "text-zinc-900"
+                )
               ]}>
                 {item.name}
                 {if item.position > 10 do
-                  Phoenix.HTML.raw("<span class=\"ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full\">Not considered</span>")
+                  Phoenix.HTML.raw(
+                    "<span class=\"ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full\">Not considered</span>"
+                  )
                 end}
               </div>
             </div>

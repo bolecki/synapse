@@ -5,6 +5,7 @@ defmodule Synapse.Admin.Season do
   schema "seasons" do
     field :name, :string
 
+    has_many :events, Synapse.Admin.Event
     belongs_to :category, Synapse.Admin.Category
 
     timestamps(type: :utc_datetime)
