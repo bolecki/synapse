@@ -3,6 +3,7 @@ defmodule SynapseWeb.EventLive.Index do
 
   alias Synapse.Admin
   alias Synapse.Admin.Event
+  alias Synapse.F1Api
 
   @impl true
   def mount(_params, _session, socket) do
@@ -43,5 +44,22 @@ defmodule SynapseWeb.EventLive.Index do
     {:ok, _} = Admin.delete_event(event)
 
     {:noreply, stream_delete(socket, :events, event)}
+  end
+
+  @impl true
+  def handle_event("update", %{"id" => id}, socket) do
+    event = Admin.get_event!(id)
+
+    event_lookup =
+      event.season.events
+      |> Enum.with_index()
+      |> Enum.map(fn {event, index} -> {event.id, index + 1} end)
+      |> Map.new()
+
+    round = Map.get(event_lookup, event.id)
+
+    F1Api.save_event(event.id, event.season.name, round)
+
+    {:noreply, socket}
   end
 end

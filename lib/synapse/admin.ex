@@ -233,7 +233,7 @@ defmodule Synapse.Admin do
       ** (Ecto.NoResultsError)
 
   """
-  def get_event!(id), do: Repo.get!(Event, id) |> Repo.preload(:season)
+  def get_event!(id), do: Repo.get!(Event, id) |> Repo.preload(season: :events)
 
   def get_latest_event!() do
     Repo.all(from r in Event, order_by: [desc: r.id], limit: 1)
@@ -310,5 +310,11 @@ defmodule Synapse.Admin do
 
   def get_ranked_predictions_for_user_event!(user_id, event_id) do
     Repo.all(from r in RankedPrediction, where: r.user_id == ^user_id and r.event_id == ^event_id)
+  end
+
+  alias Synapse.Admin.Truth
+
+  def get_truths_for_event!(event_id) do
+    Repo.all(from r in Truth, where: r.event_id == ^event_id)
   end
 end

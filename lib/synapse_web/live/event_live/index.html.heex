@@ -23,6 +23,15 @@
   </:action>
   <:action :let={{id, event}}>
     <.link
+      phx-click={JS.push("update", value: %{id: event.id})}
+    >
+      <.button class="!bg-blue-600">
+      Update
+      </.button>
+    </.link>
+  </:action>
+  <:action :let={{id, event}}>
+    <.link
       phx-click={JS.push("delete", value: %{id: event.id}) |> hide("##{id}")}
       data-confirm="Are you sure?"
     >

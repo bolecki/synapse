@@ -15,6 +15,7 @@ defmodule SynapseWeb.SeasonEventsLive do
         nil -> Admin.get_latest_season!()
         id -> Admin.get_season!(id)
       end
+
     {:noreply,
      socket
      |> assign(season: season)}
