@@ -32,10 +32,11 @@ defmodule SynapseWeb.ListComponent do
               </button>
               <div class={[
                 "flex-auto block text-sm leading-6",
-                if(item.position > 10,
-                  do: "text-zinc-400 italic bg-gray-50 border-l-4 border-gray-300 pl-2",
-                  else: "text-zinc-900"
-                )
+                cond do
+                  item.position <= 10 and Map.get(item, :truth, false) -> "text-zinc-900 bg-green-100 border-l-4 border-green-500 pl-2"
+                  item.position > 10 -> "text-zinc-400 italic bg-gray-50 border-l-4 border-gray-300 pl-2"
+                  true -> "text-zinc-900"
+                end
               ]}>
                 {item.name}
                 {if item.position > 10 do
