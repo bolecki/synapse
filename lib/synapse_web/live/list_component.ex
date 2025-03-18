@@ -49,8 +49,9 @@ defmodule SynapseWeb.ListComponent do
                   </div>
                   {if item.position <= 10 do
                     points = 11 - item.position
+                    points_pill_class = if item.truth, do: "bg-green-400 text-white", else: "bg-gray-200 text-gray-800"
                     Phoenix.HTML.raw(
-                      "<span class=\"text-xs font-semibold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full\">+#{points}</span>"
+                      "<span class=\"text-xs font-semibold #{points_pill_class} px-2 py-0.5 rounded-full\">+#{points}</span>"
                     )
                   end}
                 </div>
