@@ -38,12 +38,22 @@ defmodule SynapseWeb.ListComponent do
                   true -> "text-zinc-900"
                 end
               ]}>
-                {item.name}
-                {if item.position > 10 do
-                  Phoenix.HTML.raw(
-                    "<span class=\"ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full\">Not considered</span>"
-                  )
-                end}
+                <div class="flex justify-between w-full">
+                  <div>
+                    {item.name}
+                    {if item.position > 10 do
+                      Phoenix.HTML.raw(
+                        "<span class=\"ml-2 text-xs bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full\">Not considered</span>"
+                      )
+                    end}
+                  </div>
+                  {if item.position <= 10 do
+                    points = 11 - item.position
+                    Phoenix.HTML.raw(
+                      "<span class=\"text-xs font-semibold bg-blue-100 text-blue-800 px-2 py-0.5 rounded-full\">+#{points}</span>"
+                    )
+                  end}
+                </div>
               </div>
             </div>
           </div>
