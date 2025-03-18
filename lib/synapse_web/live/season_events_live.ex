@@ -9,10 +9,15 @@ defmodule SynapseWeb.SeasonEventsLive do
   end
 
   @impl true
-  def handle_params(%{"id" => id}, _, socket) do
+  def handle_params(params, _, socket) do
+    season =
+      case Map.get(params, "id") do
+        nil -> Admin.get_latest_season!()
+        id -> Admin.get_season!(id)
+      end
     {:noreply,
      socket
-     |> assign(season: Admin.get_season!(id))}
+     |> assign(season: season)}
   end
 
   @impl true

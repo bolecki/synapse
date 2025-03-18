@@ -70,6 +70,9 @@ defmodule SynapseWeb.Router do
       live "/users/profile", UserProfileLive, :edit
       live "/users/settings/confirm_email/:token", UserSettingsLive, :confirm_email
 
+      live "/season", SeasonEventsLive, :index
+      live "/season/:id", SeasonEventsLive, :index
+
       live "/f1-prediction", PredictionLive, :index
       live "/f1-prediction/:id", PredictionLive, :index
 
@@ -83,8 +86,6 @@ defmodule SynapseWeb.Router do
       live "/seasons", SeasonLive.Index, :index
       live "/seasons/new", SeasonLive.Index, :new
       live "/seasons/:id/edit", SeasonLive.Index, :edit
-
-      live "/season/:id", SeasonEventsLive, :index
 
       live "/seasons/:id", SeasonLive.Show, :show
       live "/seasons/:id/show/edit", SeasonLive.Show, :edit

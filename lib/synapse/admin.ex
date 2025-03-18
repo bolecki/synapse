@@ -133,6 +133,12 @@ defmodule Synapse.Admin do
   """
   def get_season!(id), do: Repo.get!(Season, id) |> Repo.preload(:events)
 
+  def get_latest_season!() do
+    Repo.all(from r in Season, order_by: [desc: r.id], limit: 1)
+    |> Repo.preload(:events)
+    |> Enum.at(0)
+  end
+
   @doc """
   Creates a season.
 
