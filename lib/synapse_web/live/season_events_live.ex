@@ -29,16 +29,18 @@ defmodule SynapseWeb.SeasonEventsLive do
         class="bg-red-600 bg-blue-600 bg-orange-500 bg-teal-400 bg-sky-600 bg-emerald-600 bg-green-400 bg-gray-400 bg-blue-400 bg-sky-300"
       >
       </div>
-      <div class="space-y-5 mx-auto max-w-7xl px-4 space-y-4">
+      <div class="mx-auto max-w-7xl px-4 space-y-2">
         <.header>
           {@season.name}
         </.header>
         <div>
-          <div :for={event <- @season.events} class="py-2" data-id={event.id}>
+          <div :for={event <- @season.events} class="pb-2" data-id={event.id}>
             <div class="flex">
-              <.button class="w-48 !bg-blue-600">
-                <.link navigate={~p"/f1-prediction/#{event.id}"}>{event.name}</.link>
-              </.button>
+              <.link navigate={~p"/f1-prediction/#{event.id}"}>
+                <.button class="w-48 !bg-violet-500">
+                  {event.name}
+                </.button>
+              </.link>
             </div>
           </div>
         </div>
