@@ -87,7 +87,7 @@ defmodule SynapseWeb.PredictionLive do
         id -> Admin.get_event!(id)
       end
 
-    truths = Admin.get_truths_for_event!(event.id)
+    truths = Admin.get_truths_for_event!(event.id) |> Enum.map(fn item -> Map.put(item, :team_color, @color_lookup[item.name]) end)
 
     {:noreply,
      socket
@@ -102,7 +102,7 @@ defmodule SynapseWeb.PredictionLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div id="lists" class="grid sm:grid-cols-1 md:grid-cols-2 gap-2">
+    <div id="lists" class="grid md:grid-cols-1 gap-2">
       <.live_component
         id="1"
         module={SynapseWeb.ListComponent}

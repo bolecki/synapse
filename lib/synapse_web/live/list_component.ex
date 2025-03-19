@@ -7,13 +7,13 @@ defmodule SynapseWeb.ListComponent do
 
   def render(assigns) do
     ~H"""
-    <div class="bg-gray-100 py-4 rounded-lg">
+    <div class="flex flex-col md:flex-row gap-4 mx-auto max-w-12xl px-4">
       <div
         style="display:none;"
         class="bg-red-600 bg-blue-600 bg-orange-500 bg-teal-400 bg-sky-600 bg-emerald-600 bg-green-400 bg-gray-400 bg-blue-400 bg-sky-300"
       >
       </div>
-      <div class="space-y-5 mx-auto max-w-7xl px-4 space-y-4">
+      <div class="bg-gray-100 p-4 rounded-lg flex-1 space-y-4">
         <.header>
           {@list_name}
         </.header>
@@ -76,6 +76,36 @@ defmodule SynapseWeb.ListComponent do
             </div>
           </:actions>
         </.simple_form>
+      </div>
+      <div :if={length(@truths) > 0} class="flex flex-col md:flex-row gap-4 mx-auto max-w-12xl px-4">
+        <div class="bg-gray-100 p-4 w-60 rounded-lg space-y-4">
+          <.header>
+            Final Results
+          </.header>
+          <div id={"#{@id}-items"} data-list_id={@id}>
+            <div :for={item <- @truths} id={"#{@id}-#{item.position}"} class="..." data-id={item.position}>
+              <div class="flex">
+                <button type="button" class="w-14 flex items-center">
+                  <span class="w-5 text-right mr-1 font-semibold">{item.position}</span>
+                  <.icon
+                    name="hero-arrows-up-down"
+                    class={[
+                      "w-7 h-7 flex-shrink-0",
+                      "bg-#{item.team_color}"
+                    ]}
+                  />
+                </button>
+                <div class="text-zinc-900">
+                  <div class="flex justify-between w-full">
+                    <div>
+                      {item.name}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
     """
