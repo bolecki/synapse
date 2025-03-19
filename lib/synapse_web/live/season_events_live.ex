@@ -16,9 +16,14 @@ defmodule SynapseWeb.SeasonEventsLive do
         id -> Admin.get_season!(id)
       end
 
+    leaderboard =
+      Admin.PointsCalculator.calculate_season_points_by_user(season.id)
+      |> Enum.map(fn item -> {item.profile_name, item.total_points} end)
+      |> Enum.sort(fn {name, points}, {name2, points2} -> points > points2 end)
+
     {:noreply,
      socket
-     |> assign(season: season)}
+     |> assign(season: season, leaderboard: leaderboard)}
   end
 
   @impl true
@@ -46,6 +51,9 @@ defmodule SynapseWeb.SeasonEventsLive do
           </div>
         </div>
       </div>
+    </div>
+    <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">
+      <.live_component id="2" module={SynapseWeb.LeaderboardComponent} leaderboard={@leaderboard} />
     </div>
     """
   end
