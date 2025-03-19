@@ -90,6 +90,8 @@ defmodule SynapseWeb.PredictionLive do
 
     predictions = Admin.PointsCalculator.calculate_points_single_query(socket.assigns.current_user.id, event.id)
 
+    leaderboard = Admin.PointsCalculator.calculate_season_points_by_user(event.season_id)
+
     {:noreply,
      socket
      |> assign(
@@ -97,7 +99,8 @@ defmodule SynapseWeb.PredictionLive do
        existing_predictions: predictions,
        prediction_list:
          get_predictions(socket.assigns.prediction_list, truths, predictions),
-       truths: truths
+       truths: truths,
+       leaderboard: leaderboard
      )}
   end
 
@@ -119,6 +122,13 @@ defmodule SynapseWeb.PredictionLive do
         user={@current_user}
         truths={@truths}
       />
+    </div>
+    <div :if={length(@leaderboard) > 0} class="flex mb-2">
+      <div :for={item <- @leaderboard}>
+        <div class="text-xl font-bold bg-green-500 text-white px-4 py-2 rounded-full inline-block shadow-md">
+          {item.profile_name} {Map.get(item.event_points, @event.id, 0)}
+        </div>
+      </div>
     </div>
     """
   end
