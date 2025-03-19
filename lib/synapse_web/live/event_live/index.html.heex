@@ -22,11 +22,9 @@
     <.link patch={~p"/events/#{event}/edit"}>Edit</.link>
   </:action>
   <:action :let={{id, event}}>
-    <.link
-      phx-click={JS.push("update", value: %{id: event.id})}
-    >
+    <.link phx-click={JS.push("update", value: %{id: event.id})}>
       <.button class="!bg-blue-600">
-      Update
+        Update
       </.button>
     </.link>
   </:action>

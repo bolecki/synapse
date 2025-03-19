@@ -18,7 +18,7 @@ defmodule SynapseWeb.ListComponent do
           {@list_name}
         </.header>
         <div id={"#{@id}-items"} phx-hook="Sortable" data-list_id={@id}>
-          <div :for={item <- @list} id={"#{@id}-#{item.id}"} class="..." data-id={item.id}>
+          <div :for={item <- @list} id={"#{@id}-#{item.position}"} class="..." data-id={item.position}>
             <div class="flex">
               <button type="button" class="w-14 flex items-center">
                 <span class="w-5 text-right mr-1 font-semibold">{item.position + 1}</span>
@@ -33,9 +33,14 @@ defmodule SynapseWeb.ListComponent do
               <div class={[
                 "flex-auto block text-sm leading-6",
                 cond do
-                  item.position <= 10 and Map.get(item, :truth, false) -> "text-zinc-900 bg-green-100 border-l-4 border-green-500 pl-2"
-                  item.position > 10 -> "text-zinc-400 italic bg-gray-50 border-l-4 border-gray-300 pl-2"
-                  true -> "text-zinc-900"
+                  item.points != nil and Map.get(item, :points, -1) > 1 ->
+                    "text-zinc-900 bg-green-100 border-l-4 border-green-500 pl-2"
+
+                  item.position > 10 ->
+                    "text-zinc-400 italic bg-gray-50 border-l-4 border-gray-300 pl-2"
+
+                  true ->
+                    "text-zinc-900"
                 end
               ]}>
                 <div class="flex justify-between w-full">
@@ -48,8 +53,13 @@ defmodule SynapseWeb.ListComponent do
                     end}
                   </div>
                   {if item.position <= 10 do
-                    points = 11 - item.position
-                    points_pill_class = if item.truth, do: "bg-green-400 text-white", else: "bg-gray-200 text-gray-800"
+                    points = if item.points != nil, do: item.points, else: 12 - item.position
+
+                    points_pill_class =
+                      if item.points != nil and item.points > 0,
+                        do: "bg-green-400 text-white",
+                        else: "bg-gray-200 text-gray-800"
+
                     Phoenix.HTML.raw(
                       "<span class=\"text-xs font-semibold #{points_pill_class} px-2 py-0.5 rounded-full\">+#{points}</span>"
                     )
