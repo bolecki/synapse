@@ -55,7 +55,6 @@ defmodule SynapseWeb.PredictionLive do
   end
 
   def get_predictions(default, truths, existing_predictions) do
-
     has_truths = length(truths) > 0
 
     case existing_predictions do
@@ -86,19 +85,31 @@ defmodule SynapseWeb.PredictionLive do
         id -> Admin.get_event!(id)
       end
 
-    truths = Admin.get_truths_for_event!(event.id) |> Enum.map(fn item -> Map.put(item, :team_color, @color_lookup[item.name]) end)
+    truths =
+      Admin.get_truths_for_event!(event.id)
+      |> Enum.map(fn item -> Map.put(item, :team_color, @color_lookup[item.name]) end)
 
-    predictions = Admin.PointsCalculator.calculate_points_single_query(socket.assigns.current_user.id, event.id)
+    predictions =
+      Admin.PointsCalculator.calculate_points_single_query(
+        socket.assigns.current_user.id,
+        event.id
+      )
 
-    leaderboard = Admin.PointsCalculator.calculate_season_points_by_user(event.season_id)
+    leaderboard =
+      case truths do
+        [] -> []
+        _ -> Admin.PointsCalculator.calculate_season_points_by_user(event.season_id)
+        |> Enum.map(fn item -> {item.profile_name, Map.get(item.event_points, event.id, 0)} end)
+        |> Enum.sort(fn {name, points}, {name2, points2} -> points > points2 end)
+      end
+
 
     {:noreply,
      socket
      |> assign(
        event: event,
        existing_predictions: predictions,
-       prediction_list:
-         get_predictions(socket.assigns.prediction_list, truths, predictions),
+       prediction_list: get_predictions(socket.assigns.prediction_list, truths, predictions),
        truths: truths,
        leaderboard: leaderboard
      )}
@@ -109,7 +120,7 @@ defmodule SynapseWeb.PredictionLive do
     ~H"""
     <div id="lists" class="grid gap-2">
       <div class="flex flex-row gap-4 mx-auto max-w-12xl px-4">
-        <h2 class="text-2xl font-bold mb-4">Your Predictions</h2>
+        <h2 class="text-2xl font-bold mb-4">{"#{@event.name} #{@event.season.name}"}</h2>
         <div :if={length(@truths) > 0} class="flex justify-end mb-2">
           <div class="text-xl font-bold bg-green-500 text-white px-4 py-2 rounded-full inline-block shadow-md">
             +{@existing_predictions.total_points}
@@ -120,40 +131,13 @@ defmodule SynapseWeb.PredictionLive do
         id="1"
         module={SynapseWeb.ListComponent}
         list={@prediction_list}
-        list_name={"#{@event.name} #{@event.season.name}"}
         event={@event}
         user={@current_user}
         truths={@truths}
       />
     </div>
     <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">
-      <h2 class="text-2xl font-bold mb-4">Leaderboard</h2>
-      <div class="bg-white rounded-lg shadow-md overflow-hidden">
-        <table class="min-w-full divide-y divide-gray-200">
-          <thead class="bg-gray-50">
-            <tr>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white divide-y divide-gray-200">
-            <tr :for={{item, index} <- Enum.with_index(@leaderboard)} class={if index == 0, do: "bg-violet-50", else: ""}>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">#{index + 1}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{item.profile_name}</div>
-              </td>
-              <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">
-                  <span class="font-bold">{Map.get(item.event_points, @event.id, 0)}</span>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      <.live_component id="2" module={SynapseWeb.LeaderboardComponent} leaderboard={@leaderboard} />
     </div>
     """
   end

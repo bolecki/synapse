@@ -112,7 +112,8 @@ defmodule Synapse.Admin.PointsCalculator do
     query =
       from rp in RankedPrediction,
         where: rp.event_id in ^event_ids,
-        join: p in Profile, on: p.user_id == rp.user_id,
+        join: p in Profile,
+        on: p.user_id == rp.user_id,
         select: %{
           user_id: rp.user_id,
           profile_name: p.name,

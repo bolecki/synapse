@@ -15,7 +15,7 @@ defmodule SynapseWeb.ListComponent do
       </div>
       <div class="bg-gray-100 p-4 rounded-lg flex-1 space-y-4">
         <.header>
-          {@list_name}
+          Your Predictions
         </.header>
         <div id={"#{@id}-items"} phx-hook="Sortable" data-list_id={@id}>
           <div :for={item <- @list} id={"#{@id}-#{item.position}"} class="..." data-id={item.position}>
@@ -83,7 +83,12 @@ defmodule SynapseWeb.ListComponent do
             Final Results
           </.header>
           <div id={"#{@id}-items"} data-list_id={@id}>
-            <div :for={item <- @truths} id={"#{@id}-#{item.position}"} class="..." data-id={item.position}>
+            <div
+              :for={item <- @truths}
+              id={"#{@id}-#{item.position}"}
+              class="..."
+              data-id={item.position}
+            >
               <div class="flex">
                 <button type="button" class="w-14 flex items-center">
                   <span class="w-5 text-right mr-1 font-semibold">{item.position}</span>
