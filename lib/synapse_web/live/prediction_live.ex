@@ -123,11 +123,33 @@ defmodule SynapseWeb.PredictionLive do
         truths={@truths}
       />
     </div>
-    <div :if={length(@leaderboard) > 0} class="flex mb-2">
-      <div :for={item <- @leaderboard}>
-        <div class="text-xl font-bold bg-green-500 text-white px-4 py-2 rounded-full inline-block shadow-md">
-          {item.profile_name} {Map.get(item.event_points, @event.id, 0)}
-        </div>
+    <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">
+      <h2 class="text-2xl font-bold mb-4">Leaderboard</h2>
+      <div class="bg-white rounded-lg shadow-md overflow-hidden">
+        <table class="min-w-full divide-y divide-gray-200">
+          <thead class="bg-gray-50">
+            <tr>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
+              <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Points</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white divide-y divide-gray-200">
+            <tr :for={{item, index} <- Enum.with_index(@leaderboard)} class={if index == 0, do: "bg-violet-50", else: ""}>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">#{index + 1}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">{item.profile_name}</div>
+              </td>
+              <td class="px-6 py-4 whitespace-nowrap">
+                <div class="text-sm font-medium text-gray-900">
+                  <span class="font-bold">{Map.get(item.event_points, @event.id, 0)}</span>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </div>
     """
