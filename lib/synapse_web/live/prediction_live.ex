@@ -107,10 +107,13 @@ defmodule SynapseWeb.PredictionLive do
   @impl true
   def render(assigns) do
     ~H"""
-    <div id="lists" class="grid md:grid-cols-1 gap-2">
-      <div :if={length(@truths) > 0} class="flex justify-end mb-2">
-        <div class="text-xl font-bold bg-green-500 text-white px-4 py-2 rounded-full inline-block shadow-md">
-          +{@existing_predictions.total_points}
+    <div id="lists" class="grid gap-2">
+      <div class="flex flex-row gap-4 mx-auto max-w-12xl px-4">
+        <h2 class="text-2xl font-bold mb-4">Your Predictions</h2>
+        <div :if={length(@truths) > 0} class="flex justify-end mb-2">
+          <div class="text-xl font-bold bg-green-500 text-white px-4 py-2 rounded-full inline-block shadow-md">
+            +{@existing_predictions.total_points}
+          </div>
         </div>
       </div>
       <.live_component
