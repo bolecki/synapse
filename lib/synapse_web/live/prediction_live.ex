@@ -54,17 +54,16 @@ defmodule SynapseWeb.PredictionLive do
     {:ok, assign(socket, prediction_list: list)}
   end
 
-  def get_predictions(user, event, default, truths) do
-    existing_points = Admin.PointsCalculator.calculate_points_single_query(user.id, event.id)
+  def get_predictions(default, truths, existing_predictions) do
 
     has_truths = length(truths) > 0
 
-    case existing_points do
+    case existing_predictions do
       [] ->
         default
 
       _ ->
-        existing_points.driver_points
+        existing_predictions.driver_points
         |> Enum.map(fn prediction ->
           points = if has_truths, do: prediction.points, else: nil
 
@@ -89,12 +88,15 @@ defmodule SynapseWeb.PredictionLive do
 
     truths = Admin.get_truths_for_event!(event.id) |> Enum.map(fn item -> Map.put(item, :team_color, @color_lookup[item.name]) end)
 
+    predictions = Admin.PointsCalculator.calculate_points_single_query(socket.assigns.current_user.id, event.id)
+
     {:noreply,
      socket
      |> assign(
        event: event,
+       existing_predictions: predictions,
        prediction_list:
-         get_predictions(socket.assigns.current_user, event, socket.assigns.prediction_list, truths),
+         get_predictions(socket.assigns.prediction_list, truths, predictions),
        truths: truths
      )}
   end
@@ -103,6 +105,11 @@ defmodule SynapseWeb.PredictionLive do
   def render(assigns) do
     ~H"""
     <div id="lists" class="grid md:grid-cols-1 gap-2">
+      <div :if={length(@truths) > 0} class="flex justify-end mb-2">
+        <div class="text-xl font-bold bg-green-500 text-white px-4 py-2 rounded-full inline-block shadow-md">
+          +{@existing_predictions.total_points}
+        </div>
+      </div>
       <.live_component
         id="1"
         module={SynapseWeb.ListComponent}
