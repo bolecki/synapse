@@ -57,7 +57,7 @@ defmodule SynapseWeb.PredictionLive do
   def get_predictions(default, truths, existing_predictions) do
     has_truths = length(truths) > 0
 
-    case existing_predictions do
+    case existing_predictions.driver_points do
       [] ->
         default
 
