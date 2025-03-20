@@ -15,6 +15,13 @@
   <:col :let={{_id, event}} label="ID">{event.id}</:col>
   <:col :let={{_id, event}} label="Name">{event.name}</:col>
   <:col :let={{_id, event}} label="Season ID">{event.season_id}</:col>
+  <:col :let={{_id, event}} label="Deadline">
+    {if event.deadline do
+      Calendar.strftime(event.deadline, "%Y-%m-%d %H:%M:%S UTC")
+    else
+      "Not set"
+    end}
+  </:col>
   <:action :let={{_id, event}}>
     <div class="sr-only">
       <.link navigate={~p"/events/#{event}"}>Show</.link>

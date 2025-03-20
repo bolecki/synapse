@@ -21,6 +21,7 @@ defmodule SynapseWeb.EventLive.FormComponent do
       >
         <.input field={@form[:season_id]} type="number" label="Season ID" />
         <.input field={@form[:name]} type="text" label="Name" />
+        <.input field={@form[:deadline]} type="datetime-local" label="Deadline" />
         <:actions>
           <.button phx-disable-with="Saving...">Save Event</.button>
         </:actions>

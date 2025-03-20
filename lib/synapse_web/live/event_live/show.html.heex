@@ -10,6 +10,13 @@
 
 <.list>
   <:item title="Name">{@event.name}</:item>
+  <:item title="Deadline">
+    {if @event.deadline do
+      Calendar.strftime(@event.deadline, "%Y-%m-%d %H:%M:%S UTC")
+    else
+      "Not set"
+    end}
+  </:item>
 </.list>
 
 <.back navigate={~p"/events"}>Back to events</.back>

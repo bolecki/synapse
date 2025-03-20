@@ -4,6 +4,7 @@ defmodule Synapse.Admin.Event do
 
   schema "events" do
     field :name, :string
+    field :deadline, :utc_datetime
 
     belongs_to :season, Synapse.Admin.Season
 
@@ -13,7 +14,7 @@ defmodule Synapse.Admin.Event do
   @doc false
   def changeset(event, attrs) do
     event
-    |> cast(attrs, [:name, :season_id])
+    |> cast(attrs, [:name, :season_id, :deadline])
     |> validate_required([:name, :season_id])
   end
 end
