@@ -52,13 +52,20 @@ defmodule SynapseWeb.EventLive.Index do
 
     event_lookup =
       event.season.events
+      |> Enum.sort(&(&1.id < &2.id))
       |> Enum.with_index()
       |> Enum.map(fn {event, index} -> {event.id, index + 1} end)
       |> Map.new()
 
     round = Map.get(event_lookup, event.id)
 
-    F1Api.save_event(event.id, event.season.name, round)
+    # Update the deadline
+    {:ok, deadline} = F1Api.get_and_save_first_practice_time(event, event.season.name, round)
+
+    # Only save the event if the deadline is in the past
+    if deadline && DateTime.compare(deadline, DateTime.utc_now()) == :lt do
+      F1Api.save_event(event.id, event.season.name, round)
+    end
 
     {:noreply, socket}
   end

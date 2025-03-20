@@ -54,6 +54,12 @@ defmodule SynapseWeb.PredictionLive do
     {:ok, assign(socket, prediction_list: list)}
   end
 
+  # Helper function to check if deadline is in the future
+  defp deadline_in_future?(deadline) do
+    now = DateTime.utc_now()
+    DateTime.compare(deadline, now) == :gt
+  end
+
   def get_predictions(default, truths, existing_predictions) do
     has_truths = length(truths) > 0
 
@@ -126,6 +132,57 @@ defmodule SynapseWeb.PredictionLive do
         <div :if={length(@truths) > 0} class="flex justify-end mb-2">
           <div class="text-xl font-bold bg-green-500 text-white px-4 py-2 rounded-full inline-block shadow-md">
             +{@existing_predictions.total_points}
+          </div>
+        </div>
+      </div>
+
+      <div :if={@event.deadline} class="flex justify-center mb-4">
+        <div
+          :if={deadline_in_future?(@event.deadline)}
+          class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 rounded shadow"
+          id="countdown"
+          phx-hook="Countdown"
+          data-deadline={DateTime.to_iso8601(@event.deadline)}
+        >
+          <div class="flex items-center">
+            <svg
+              class="h-6 w-6 mr-2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span class="font-semibold">Time remaining:</span>
+            <span class="ml-2 countdown-value">Loading...</span>
+          </div>
+        </div>
+        <div
+          :if={!deadline_in_future?(@event.deadline)}
+          class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow"
+        >
+          <div class="flex items-center">
+            <svg
+              class="h-6 w-6 mr-2"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <span class="font-semibold">Deadline passed</span>
           </div>
         </div>
       </div>

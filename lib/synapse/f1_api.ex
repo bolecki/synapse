@@ -41,6 +41,38 @@ defmodule Synapse.F1Api do
   end
 
   @doc """
+  Fetches the first practice time for a specific year and round, and saves it as the event's deadline.
+
+  ## Parameters
+    - event_id: The ID of the event to update
+    - year: The year of the race (e.g., "2025")
+    - round: The round number of the race (e.g., "1")
+
+  ## Returns
+    - {:ok, datetime} - A DateTime struct representing the first practice time
+    - {:error, reason} - If an error occurs during the request or parsing
+  """
+  def get_and_save_first_practice_time(event, year, round) do
+    url = "https://api.jolpi.ca/ergast/f1/#{year}/#{round}/"
+
+    case make_request(url) do
+      {:ok, body} ->
+        case parse_first_practice_time(body) do
+          {:ok, datetime} ->
+            # Update the event's deadline with the practice time
+            Synapse.Admin.update_event(event, %{deadline: datetime})
+            {:ok, datetime}
+
+          error ->
+            error
+        end
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc """
   Fetches the race results for a specific year and round, returning a list of driver names
   in the order they finished.
 
@@ -74,6 +106,38 @@ defmodule Synapse.F1Api do
 
       {:error, reason} ->
         {:error, "API request failed: #{inspect(reason)}"}
+    end
+  end
+
+  defp parse_first_practice_time(body) do
+    case Jason.decode(body) do
+      {:ok, data} ->
+        try do
+          first_practice =
+            data
+            |> get_in(["MRData", "RaceTable", "Races"])
+            |> List.first()
+            |> Map.get("FirstPractice", %{})
+
+          case first_practice do
+            %{"date" => date, "time" => time} ->
+              # Combine date and time into a single DateTime
+              datetime_string = "#{date}T#{time}"
+
+              case DateTime.from_iso8601(datetime_string) do
+                {:ok, datetime, _offset} -> {:ok, datetime}
+                {:error, reason} -> {:error, "Failed to parse datetime: #{reason}"}
+              end
+
+            _ ->
+              {:error, "FirstPractice data not found in response"}
+          end
+        rescue
+          error -> {:error, "Failed to parse FirstPractice time: #{inspect(error)}"}
+        end
+
+      {:error, reason} ->
+        {:error, "Failed to decode JSON: #{inspect(reason)}"}
     end
   end
 
