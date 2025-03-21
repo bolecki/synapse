@@ -57,8 +57,7 @@ defmodule SynapseWeb.EventLive.Index do
   def handle_event("populate", %{}, socket) do
     events = F1Api.save_season_events_current_year()
 
-    # {:noreply, stream(socket, :events, events)}
-    {:noreply, socket}
+    {:noreply, stream(socket, :events, events)}
   end
 
   @impl true

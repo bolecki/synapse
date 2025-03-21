@@ -131,7 +131,7 @@ defmodule Synapse.F1Api do
 
           case Repo.transaction(multi) do
             {:ok, results} ->
-              Map.values(results)
+              Map.values(results) |> Enum.filter(fn event -> event.id != nil end)
 
             {:error, _, changeset, _} ->
               :failed
