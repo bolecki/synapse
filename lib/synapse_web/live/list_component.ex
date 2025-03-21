@@ -17,7 +17,7 @@ defmodule SynapseWeb.ListComponent do
         <.header>
           Your Predictions
         </.header>
-        <div id={"#{@id}-items"} phx-hook="Sortable" data-list_id={@id}>
+        <div id={"#{@id}-items"} phx-hook={if SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline), do: "Sortable", else: ""} data-list_id={@id}>
           <div :for={item <- @list} id={"#{@id}-#{item.position}"} class="..." data-id={item.position}>
             <div class="flex">
               <button type="button" class="w-14 flex items-center">
