@@ -47,6 +47,13 @@ defmodule SynapseWeb.EventLive.Index do
   end
 
   @impl true
+  def handle_event("clear", %{"id" => id}, socket) do
+    :ok = Admin.delete_truths_for_event(id)
+
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("update", %{"id" => id}, socket) do
     event = Admin.get_event!(id)
 

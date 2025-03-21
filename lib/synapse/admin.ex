@@ -317,4 +317,9 @@ defmodule Synapse.Admin do
   def get_truths_for_event!(event_id) do
     Repo.all(from r in Truth, where: r.event_id == ^event_id)
   end
+
+  def delete_truths_for_event(event_id) do
+    Repo.delete_all(from r in Truth, where: r.event_id == ^event_id)
+    :ok
+  end
 end

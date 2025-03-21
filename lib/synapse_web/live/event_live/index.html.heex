@@ -36,6 +36,13 @@
     </.link>
   </:action>
   <:action :let={{id, event}}>
+    <.link phx-click={JS.push("clear", value: %{id: event.id})}>
+      <.button class="!bg-orange-600">
+        Clear
+      </.button>
+    </.link>
+  </:action>
+  <:action :let={{id, event}}>
     <.link
       phx-click={JS.push("delete", value: %{id: event.id}) |> hide("##{id}")}
       data-confirm="Are you sure?"
