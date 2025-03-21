@@ -85,7 +85,7 @@ defmodule SynapseWeb.SeasonEventsLive do
             <div :for={event <- @past_events} class="pb-2" data-id={event.id}>
               <div class="flex">
                 <.link navigate={~p"/f1-prediction/#{event.id}"}>
-                  <.button class="w-48 !bg-gray-400">
+                  <.button class="w-48 !bg-blue-400">
                     {event.name}
                   </.button>
                 </.link>

@@ -69,7 +69,7 @@ defmodule SynapseWeb.ListComponent do
             </div>
           </div>
         </div>
-        <.simple_form for={%{}} phx-submit="save" phx-target={@myself} class="bg-transparent">
+        <.simple_form :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline)} for={%{}} phx-submit="save" phx-target={@myself} class="bg-transparent">
           <:actions>
             <div class="w-full">
               <.button type="submit" class="w-full !bg-blue-600">Save</.button>
@@ -138,34 +138,40 @@ defmodule SynapseWeb.ListComponent do
   end
 
   def handle_event("save", _params, socket) do
-    multi =
-      socket.assigns.list
-      |> Enum.with_index()
-      |> Enum.reduce(Multi.new(), fn {prediction, index}, multi ->
-        changeset =
-          %RankedPrediction{
-            name: prediction.name,
-            position: prediction.position + 1,
-            event_id: socket.assigns.event.id,
-            user_id: socket.assigns.user.id
-          }
-          |> RankedPrediction.changeset(%{})
+    case SynapseWeb.PredictionLive.deadline_in_future?(socket.assigns.event.deadline) do
+      true ->
+        multi =
+          socket.assigns.list
+          |> Enum.with_index()
+          |> Enum.reduce(Multi.new(), fn {prediction, index}, multi ->
+            changeset =
+              %RankedPrediction{
+                name: prediction.name,
+                position: prediction.position + 1,
+                event_id: socket.assigns.event.id,
+                user_id: socket.assigns.user.id
+              }
+              |> RankedPrediction.changeset(%{})
 
-        Multi.insert(
-          multi,
-          "prediction_#{index}",
-          changeset,
-          on_conflict: {:replace, [:position]},
-          conflict_target: [:user_id, :event_id, :name]
-        )
-      end)
+            Multi.insert(
+              multi,
+              "prediction_#{index}",
+              changeset,
+              on_conflict: {:replace, [:position]},
+              conflict_target: [:user_id, :event_id, :name]
+            )
+          end)
 
-    case Repo.transaction(multi) do
-      {:ok, _} ->
-        {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
+        case Repo.transaction(multi) do
+          {:ok, _} ->
+            {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
 
-      {:error, _, changeset, _} ->
-        {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
+          {:error, _, changeset, _} ->
+            {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
+        end
+      _ ->
+        IO.puts("deadline passed")
+        {:noreply, socket |> put_flash(:error, "Prediction deadline passed.")}
     end
   end
 end

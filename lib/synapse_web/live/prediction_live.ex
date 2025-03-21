@@ -55,7 +55,7 @@ defmodule SynapseWeb.PredictionLive do
   end
 
   # Helper function to check if deadline is in the future
-  defp deadline_in_future?(deadline) do
+  def deadline_in_future?(deadline) do
     now = DateTime.utc_now()
     DateTime.compare(deadline, now) == :gt
   end
@@ -165,7 +165,7 @@ defmodule SynapseWeb.PredictionLive do
           </div>
         </div>
         <div
-          :if={!deadline_in_future?(@event.deadline)}
+          :if={!deadline_in_future?(@event.deadline) and length(@truths) == 0}
           class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded shadow"
         >
           <div class="flex items-center">
