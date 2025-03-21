@@ -93,6 +93,7 @@ defmodule SynapseWeb.PredictionLive do
 
     truths =
       Admin.get_truths_for_event!(event.id)
+      |> Enum.sort(&(&1.position < &2.position))
       |> Enum.map(fn item -> Map.put(item, :team_color, @color_lookup[item.name]) end)
 
     predictions =
