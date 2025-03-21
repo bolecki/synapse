@@ -1,6 +1,11 @@
 <.header>
   Listing Events
   <:actions>
+    <.link phx-click={JS.push("populate", value: %{})}>
+      <.button class="!bg-violet-600">
+        Populate Season
+      </.button>
+    </.link>
     <.link patch={~p"/events/new"}>
       <.button>New Event</.button>
     </.link>

@@ -54,6 +54,14 @@ defmodule SynapseWeb.EventLive.Index do
   end
 
   @impl true
+  def handle_event("populate", %{}, socket) do
+    events = F1Api.save_season_events_current_year()
+
+    # {:noreply, stream(socket, :events, events)}
+    {:noreply, socket}
+  end
+
+  @impl true
   def handle_event("update", %{"id" => id}, socket) do
     event = Admin.get_event!(id)
 
