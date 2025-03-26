@@ -66,7 +66,7 @@ defmodule SynapseWeb.SeasonEventsLive do
   # Prepare data for the cumulative points chart
   defp prepare_cumulative_points_chart_data(user_points_data, events) do
     # Extract event names for labels
-    labels = Enum.map(events, & &1.name)
+    labels = Enum.map(events, &(String.replace(&1.name, " Grand Prix", "")))
 
     # Generate a list of colors for the chart
     colors = [
@@ -172,7 +172,6 @@ defmodule SynapseWeb.SeasonEventsLive do
     </div>
 
     <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">
-      <h2 class="text-2xl font-bold mb-4">Cumulative Points Chart</h2>
       <div class="bg-white rounded-lg shadow-md p-4">
         <div class="w-full" style="height: 400px;">
           <canvas id="cumulative-points-chart" phx-hook="CumulativePointsChart" data-chart-data={@chart_data}></canvas>
