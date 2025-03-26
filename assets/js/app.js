@@ -22,10 +22,70 @@ import {Socket} from "phoenix"
 import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import Sortable from "../vendor/Sortable";
+import "../vendor/chart.js"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
 let Hooks = {}
+
+Hooks.CumulativePointsChart = {
+  mounted() {
+    const ctx = this.el.getContext('2d');
+    const chartData = JSON.parse(this.el.dataset.chartData);
+
+    // Create a chart
+    this.chart = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: chartData.labels,
+        datasets: chartData.datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: 'Cumulative Points Over Season'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: 'Points'
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: 'Events'
+            }
+          }
+        }
+      }
+    });
+  },
+
+  updated() {
+    // Update chart data when it changes
+    const chartData = JSON.parse(this.el.dataset.chartData);
+    this.chart.data.labels = chartData.labels;
+    this.chart.data.datasets = chartData.datasets;
+    this.chart.update();
+  },
+
+  destroyed() {
+    // Clean up chart when element is removed
+    if (this.chart) {
+      this.chart.destroy();
+    }
+  }
+}
 
 Hooks.Countdown = {
   mounted() {
