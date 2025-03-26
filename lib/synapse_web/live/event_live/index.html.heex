@@ -33,14 +33,14 @@
     </div>
     <.link patch={~p"/events/#{event}/edit"}>Edit</.link>
   </:action>
-  <:action :let={{id, event}}>
+  <:action :let={{_id, event}}>
     <.link phx-click={JS.push("update", value: %{id: event.id})}>
       <.button class="!bg-blue-600">
         Update
       </.button>
     </.link>
   </:action>
-  <:action :let={{id, event}}>
+  <:action :let={{_id, event}}>
     <.link phx-click={JS.push("clear", value: %{id: event.id})}>
       <.button class="!bg-orange-600">
         Clear

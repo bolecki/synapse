@@ -110,7 +110,7 @@ defmodule SynapseWeb.PredictionLive do
         _ ->
           Admin.PointsCalculator.calculate_season_points_by_user(event.season_id)
           |> Enum.map(fn item -> {item.profile_name, Map.get(item.event_points, event.id, 0)} end)
-          |> Enum.sort(fn {name, points}, {name2, points2} -> points > points2 end)
+          |> Enum.sort(fn {_name, points}, {_name2, points2} -> points > points2 end)
       end
 
     {:noreply,

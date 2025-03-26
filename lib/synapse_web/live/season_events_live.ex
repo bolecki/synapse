@@ -19,7 +19,7 @@ defmodule SynapseWeb.SeasonEventsLive do
     leaderboard =
       Admin.PointsCalculator.calculate_season_points_by_user(season.id)
       |> Enum.map(fn item -> {item.profile_name, item.total_points} end)
-      |> Enum.sort(fn {name, points}, {name2, points2} -> points > points2 end)
+      |> Enum.sort(fn {_name, points}, {_name2, points2} -> points > points2 end)
 
     now = DateTime.utc_now()
 

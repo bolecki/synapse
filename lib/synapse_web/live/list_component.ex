@@ -17,17 +17,22 @@ defmodule SynapseWeb.ListComponent do
         <.header>
           Your Predictions
         </.header>
-        <div id={"#{@id}-items"} phx-hook={if SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline), do: "Sortable", else: ""} data-list_id={@id}>
+        <div
+          id={"#{@id}-items"}
+          phx-hook={
+            if SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline),
+              do: "Sortable",
+              else: ""
+          }
+          data-list_id={@id}
+        >
           <div :for={item <- @list} id={"#{@id}-#{item.position}"} class="..." data-id={item.position}>
             <div class="flex">
               <button type="button" class="w-14 flex items-center">
                 <span class="w-5 text-right mr-1 font-semibold">{item.position + 1}</span>
                 <.icon
                   name="hero-arrows-up-down"
-                  class={[
-                    "w-7 h-7 flex-shrink-0",
-                    "bg-#{item.team_color}"
-                  ]}
+                  class={"w-7 h-7 flex-shrink-0 bg-#{item.team_color}"}
                 />
               </button>
               <div class={[
@@ -69,7 +74,13 @@ defmodule SynapseWeb.ListComponent do
             </div>
           </div>
         </div>
-        <.simple_form :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline)} for={%{}} phx-submit="save" phx-target={@myself} class="bg-transparent">
+        <.simple_form
+          :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline)}
+          for={%{}}
+          phx-submit="save"
+          phx-target={@myself}
+          class="bg-transparent"
+        >
           <:actions>
             <div class="w-full">
               <.button type="submit" class="w-full !bg-blue-600">Save</.button>
@@ -94,10 +105,7 @@ defmodule SynapseWeb.ListComponent do
                   <span class="w-5 text-right mr-1 font-semibold">{item.position}</span>
                   <.icon
                     name="hero-arrows-up-down"
-                    class={[
-                      "w-7 h-7 flex-shrink-0",
-                      "bg-#{item.team_color}"
-                    ]}
+                    class={"w-7 h-7 flex-shrink-0 bg-#{item.team_color}"}
                   />
                 </button>
                 <div class="text-zinc-900">
@@ -166,9 +174,10 @@ defmodule SynapseWeb.ListComponent do
           {:ok, _} ->
             {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
 
-          {:error, _, changeset, _} ->
+          {:error, _, _changeset, _} ->
             {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
         end
+
       _ ->
         IO.puts("deadline passed")
         {:noreply, socket |> put_flash(:error, "Prediction deadline passed.")}

@@ -1,7 +1,7 @@
 defmodule Synapse.Admin.PointsCalculator do
   import Ecto.Query
   alias Synapse.Repo
-  alias Synapse.Admin.{RankedPrediction, Truth, Event}
+  alias Synapse.Admin.{RankedPrediction, Event}
   alias Synapse.Accounts.Profile
 
   # Alternative version that returns everything in a single query
@@ -160,7 +160,7 @@ defmodule Synapse.Admin.PointsCalculator do
     # Group results by user_id
     results
     |> Enum.group_by(& &1.user_id)
-    |> Enum.map(fn {user_id, user_predictions} ->
+    |> Enum.map(fn {_user_id, user_predictions} ->
       # Get the profile name (should be the same for all predictions by this user)
       profile_name = user_predictions |> List.first() |> Map.get(:profile_name)
 

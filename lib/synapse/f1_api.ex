@@ -37,7 +37,7 @@ defmodule Synapse.F1Api do
       {:ok, _} ->
         :ok
 
-      {:error, _, changeset, _} ->
+      {:error, _, _changeset, _} ->
         :failed
     end
   end
@@ -80,7 +80,7 @@ defmodule Synapse.F1Api do
 
     case make_request(url) do
       {:ok, body} ->
-        res = parse_events(body)
+        parse_events(body)
 
       {:error, reason} ->
         {:error, reason}
@@ -133,7 +133,7 @@ defmodule Synapse.F1Api do
             {:ok, results} ->
               Map.values(results) |> Enum.filter(fn event -> event.id != nil end)
 
-            {:error, _, changeset, _} ->
+            {:error, _, _changeset, _} ->
               :failed
           end
         rescue
