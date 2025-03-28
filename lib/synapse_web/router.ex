@@ -73,6 +73,9 @@ defmodule SynapseWeb.Router do
       live "/season", SeasonEventsLive, :index
       live "/season/:id", SeasonEventsLive, :index
 
+      live "/leaderboard", LeaderboardLive, :index
+      live "/leaderboard/:id", LeaderboardLive, :index
+
       live "/f1-prediction", PredictionLive, :index
       live "/f1-prediction/:id", PredictionLive, :index
 

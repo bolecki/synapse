@@ -4,7 +4,7 @@ defmodule SynapseWeb.LeaderboardComponent do
   def render(assigns) do
     ~H"""
     <div class="mt-8 mb-4">
-      <h2 class="text-2xl font-bold mb-4">Leaderboard</h2>
+      <h2 class="text-2xl font-bold mb-4">{@title}</h2>
       <div class="bg-white rounded-lg shadow-md overflow-hidden">
         <table class="min-w-full divide-y divide-gray-200">
           <thead class="bg-gray-50">
