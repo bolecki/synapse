@@ -197,7 +197,12 @@ defmodule SynapseWeb.PredictionLive do
       />
     </div>
     <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">
-      <.live_component id="2" module={SynapseWeb.LeaderboardComponent} leaderboard={@leaderboard} title="Event Leaderboard" />
+      <.live_component
+        id="2"
+        module={SynapseWeb.LeaderboardComponent}
+        leaderboard={@leaderboard}
+        title="Event Leaderboard"
+      />
     </div>
     """
   end

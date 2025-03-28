@@ -45,12 +45,20 @@ defmodule SynapseWeb.LeaderboardLive do
   # Prepare data for the cumulative points chart
   defp prepare_cumulative_points_chart_data(user_points_data, events) do
     # Extract event names for labels
-    labels = Enum.map(events, &(String.replace(&1.name, " Grand Prix", "")))
+    labels = Enum.map(events, &String.replace(&1.name, " Grand Prix", ""))
 
     # Generate a list of colors for the chart
     colors = [
-      "#FF6384", "#36A2EB", "#FFCE56", "#4BC0C0", "#9966FF",
-      "#FF9F40", "#8AC249", "#EA5F89", "#00D8B6", "#8B75D7"
+      "#FF6384",
+      "#36A2EB",
+      "#FFCE56",
+      "#4BC0C0",
+      "#9966FF",
+      "#FF9F40",
+      "#8AC249",
+      "#EA5F89",
+      "#00D8B6",
+      "#8B75D7"
     ]
 
     # Create datasets for each user
@@ -68,7 +76,8 @@ defmodule SynapseWeb.LeaderboardLive do
           label: user_data.profile_name,
           data: cumulative_points,
           borderColor: color,
-          backgroundColor: color <> "33", # Add transparency
+          # Add transparency
+          backgroundColor: color <> "33",
           fill: false,
           tension: 0.1
         }
@@ -95,21 +104,31 @@ defmodule SynapseWeb.LeaderboardLive do
       # Add the new cumulative total to the list
       {points_list ++ [new_total], new_total}
     end)
-    |> elem(0) # Return just the list of cumulative points
+    # Return just the list of cumulative points
+    |> elem(0)
   end
 
   @impl true
   def render(assigns) do
     ~H"""
-
     <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">
-      <.live_component id="leaderboard" module={SynapseWeb.LeaderboardComponent} leaderboard={@leaderboard} title={"#{@season.name} Leaderboard"} />
+      <.live_component
+        id="leaderboard"
+        module={SynapseWeb.LeaderboardComponent}
+        leaderboard={@leaderboard}
+        title={"#{@season.name} Leaderboard"}
+      />
     </div>
 
     <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">
       <div class="bg-white rounded-lg shadow-md p-4">
         <div class="w-full" style="height: 400px;">
-          <canvas id="cumulative-points-chart" phx-hook="CumulativePointsChart" data-chart-data={@chart_data}></canvas>
+          <canvas
+            id="cumulative-points-chart"
+            phx-hook="CumulativePointsChart"
+            data-chart-data={@chart_data}
+          >
+          </canvas>
         </div>
       </div>
     </div>
