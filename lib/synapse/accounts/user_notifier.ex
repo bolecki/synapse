@@ -1,21 +1,20 @@
 defmodule Synapse.Accounts.UserNotifier do
   import Swoosh.Email
 
-  # alias Synapse.Mailer
+  alias Synapse.Mailer
 
   # Delivers the email using the application mailer.
   defp deliver(recipient, subject, body) do
     email =
       new()
       |> to(recipient)
-      |> from({"Synapse", "contact@example.com"})
+      |> from({"Synapse", "postmaster@synapse.uritomi.com"})
       |> subject(subject)
       |> text_body(body)
 
-    # with {:ok, _metadata} <- Mailer.deliver(email) do
-    #   {:ok, email}
-    # end
-    {:ok, email}
+    with {:ok, _metadata} <- Mailer.deliver(email) do
+      {:ok, email}
+    end
   end
 
   @doc """

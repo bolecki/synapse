@@ -14,6 +14,8 @@ defmodule Synapse.Application do
       {Phoenix.PubSub, name: Synapse.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: Synapse.Finch},
+      # Start another Finch instance specifically for Swoosh
+      {Finch, name: Swoosh.Finch},
       # Start a worker by calling: Synapse.Worker.start_link(arg)
       # {Synapse.Worker, arg},
       # Start to serve requests, typically the last entry
