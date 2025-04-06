@@ -2,6 +2,7 @@ defmodule SynapseWeb.PredictionLive do
   use SynapseWeb, :live_view
 
   alias Synapse.Admin
+  alias Synapse.Accounts
 
   @color_lookup %{
     "Lewis Hamilton" => "red-600",
@@ -96,9 +97,15 @@ defmodule SynapseWeb.PredictionLive do
       |> Enum.sort(&(&1.position < &2.position))
       |> Enum.map(fn item -> Map.put(item, :team_color, @color_lookup[item.name]) end)
 
+    user =
+      case Map.get(params, "username") do
+        nil -> socket.assigns.current_user
+        username -> Accounts.get_user_by_profile_name!(username)
+      end
+
     predictions =
       Admin.PointsCalculator.calculate_points_single_query(
-        socket.assigns.current_user.id,
+        user.id,
         event.id
       )
 
@@ -120,7 +127,9 @@ defmodule SynapseWeb.PredictionLive do
        existing_predictions: predictions,
        prediction_list: get_predictions(socket.assigns.prediction_list, truths, predictions),
        truths: truths,
-       leaderboard: leaderboard
+       leaderboard: leaderboard,
+       user: user,
+       viewing: Map.has_key?(params, "username")
      )}
   end
 
@@ -188,12 +197,14 @@ defmodule SynapseWeb.PredictionLive do
         </div>
       </div>
       <.live_component
+        :if={!deadline_in_future?(@event.deadline) or not @viewing}
         id="1"
         module={SynapseWeb.ListComponent}
         list={@prediction_list}
         event={@event}
-        user={@current_user}
+        user={@user}
         truths={@truths}
+        viewing={@viewing}
       />
     </div>
     <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">

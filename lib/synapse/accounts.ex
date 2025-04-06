@@ -387,6 +387,11 @@ defmodule Synapse.Accounts do
     |> Repo.one!()
   end
 
+  def get_user_by_profile_name!(username) do
+    from(u in User, join: p in UserProfile, on: p.user_id == u.id, where: p.name == ^username)
+    |> Repo.one!()
+  end
+
   @doc """
   Creates a profile.
 

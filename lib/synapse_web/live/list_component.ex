@@ -20,7 +20,7 @@ defmodule SynapseWeb.ListComponent do
         <div
           id={"#{@id}-items"}
           phx-hook={
-            if SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline),
+            if SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing,
               do: "Sortable",
               else: ""
           }
@@ -75,7 +75,7 @@ defmodule SynapseWeb.ListComponent do
           </div>
         </div>
         <.simple_form
-          :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline)}
+          :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing}
           for={%{}}
           phx-submit="save"
           phx-target={@myself}
