@@ -15,7 +15,7 @@ defmodule SynapseWeb.ListComponent do
       </div>
       <div class="bg-gray-100 p-4 rounded-lg flex-1 space-y-4">
         <.header>
-          Your Predictions
+          {@title}
         </.header>
         <div
           id={"#{@id}-items"}

@@ -120,6 +120,12 @@ defmodule SynapseWeb.PredictionLive do
           |> Enum.sort(fn {_name, points}, {_name2, points2} -> points > points2 end)
       end
 
+    title =
+      case user.profile.name == socket.assigns.current_user.profile.name do
+        false -> "#{user.profile.name}'s Predictions"
+        _ -> "Your Predictions"
+      end
+
     {:noreply,
      socket
      |> assign(
@@ -129,7 +135,8 @@ defmodule SynapseWeb.PredictionLive do
        truths: truths,
        leaderboard: leaderboard,
        user: user,
-       viewing: Map.has_key?(params, "username")
+       viewing: Map.has_key?(params, "username"),
+       title: title
      )}
   end
 
@@ -205,6 +212,7 @@ defmodule SynapseWeb.PredictionLive do
         user={@user}
         truths={@truths}
         viewing={@viewing}
+        title={@title}
       />
     </div>
     <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">
@@ -212,6 +220,7 @@ defmodule SynapseWeb.PredictionLive do
         id="2"
         module={SynapseWeb.LeaderboardComponent}
         leaderboard={@leaderboard}
+        event={@event}
         title="Event Leaderboard"
       />
     </div>

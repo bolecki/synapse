@@ -390,6 +390,7 @@ defmodule Synapse.Accounts do
   def get_user_by_profile_name!(username) do
     from(u in User, join: p in UserProfile, on: p.user_id == u.id, where: p.name == ^username)
     |> Repo.one!()
+    |> Repo.preload(:profile)
   end
 
   @doc """
