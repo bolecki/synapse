@@ -38,7 +38,14 @@ defmodule SynapseWeb.LeaderboardComponent do
                 <div class="text-sm font-medium text-gray-900">#{index + 1}</div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
-                <div class="text-sm font-medium text-gray-900">{name}</div>
+                <div :if={@event == nil}>
+                  <div class="text-sm font-medium text-gray-900">{name}</div>
+                </div>
+                <div :if={@event != nil}>
+                  <div class="text-sm font-medium text-gray-900">
+                    <a href={"/f1-prediction/user/#{name}/event/#{@event.id}"}>{name}</a>
+                  </div>
+                </div>
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="text-sm font-medium text-gray-900">

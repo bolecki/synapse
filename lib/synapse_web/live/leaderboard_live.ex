@@ -116,6 +116,7 @@ defmodule SynapseWeb.LeaderboardLive do
         id="leaderboard"
         module={SynapseWeb.LeaderboardComponent}
         leaderboard={@leaderboard}
+        event={nil}
         title={"#{@season.name} Leaderboard"}
       />
     </div>
