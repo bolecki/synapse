@@ -91,7 +91,11 @@ defmodule SynapseWeb.Router do
     pipe_through [:browser, :require_authenticated_user, :admin]
 
     live_session :require_admin_user,
-      on_mount: [{SynapseWeb.UserAuth, :ensure_authenticated}, {SynapseWeb.UserAuth, :ensure_admin}] do
+      on_mount: [
+        {SynapseWeb.UserAuth, :ensure_authenticated},
+        {SynapseWeb.UserAuth, :ensure_admin}
+      ] do
+      live "/admin", AdminDashboardLive, :index
       live "/categories", CategoryLive.Index, :index
       live "/categories/new", CategoryLive.Index, :new
       live "/categories/:id/edit", CategoryLive.Index, :edit

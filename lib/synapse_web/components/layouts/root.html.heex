@@ -17,6 +17,16 @@
         <li class="text-[0.8125rem] leading-6 text-zinc-900">
           {@current_user.profile.name}
         </li>
+        <%= if @current_user.profile && @current_user.profile.admin do %>
+          <li>
+            <.link
+              href={~p"/admin"}
+              class="text-[0.8125rem] leading-6 text-zinc-900 font-semibold hover:text-zinc-700 bg-amber-200 px-2 py-1 rounded"
+            >
+              Admin
+            </.link>
+          </li>
+        <% end %>
         <li>
           <.link
             href={~p"/users/settings"}

@@ -177,7 +177,8 @@ defmodule SynapseWeb.UserAuth do
   def on_mount(:ensure_admin, _params, session, socket) do
     socket = mount_current_user(socket, session)
 
-    if socket.assigns.current_user && socket.assigns.current_user.profile && socket.assigns.current_user.profile.admin do
+    if socket.assigns.current_user && socket.assigns.current_user.profile &&
+         socket.assigns.current_user.profile.admin do
       {:cont, socket}
     else
       socket =
@@ -232,7 +233,8 @@ defmodule SynapseWeb.UserAuth do
   Used for routes that require the user to be an admin.
   """
   def require_admin_user(conn, _opts) do
-    if conn.assigns[:current_user] && conn.assigns[:current_user].profile && conn.assigns[:current_user].profile.admin do
+    if conn.assigns[:current_user] && conn.assigns[:current_user].profile &&
+         conn.assigns[:current_user].profile.admin do
       conn
     else
       conn
