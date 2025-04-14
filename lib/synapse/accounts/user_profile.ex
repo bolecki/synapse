@@ -4,6 +4,7 @@ defmodule Synapse.Accounts.UserProfile do
 
   schema "profiles" do
     field :name, :string
+    field :admin, :boolean, default: false
 
     belongs_to :user, Synapse.Accounts.User
 
@@ -13,7 +14,7 @@ defmodule Synapse.Accounts.UserProfile do
   @doc false
   def changeset(profile, attrs) do
     profile
-    |> cast(attrs, [:name, :user_id])
+    |> cast(attrs, [:name, :user_id, :admin])
     |> validate_required([:name, :user_id])
     |> unique_constraint(:name)
     |> unique_constraint(:user_id)

@@ -457,4 +457,38 @@ defmodule Synapse.Accounts do
   def change_profile(%UserProfile{} = profile, attrs \\ %{}) do
     UserProfile.changeset(profile, attrs)
   end
+
+  @doc """
+  Sets a user as an admin.
+
+  ## Examples
+
+      iex> set_admin(user_id, true)
+      {:ok, %UserProfile{}}
+
+      iex> set_admin(user_id, false)
+      {:ok, %UserProfile{}}
+
+  """
+  def set_admin(user_id, is_admin) when is_boolean(is_admin) do
+    profile = get_profile_by_user_id!(user_id)
+    update_profile(profile, %{admin: is_admin})
+  end
+
+  @doc """
+  Checks if a user is an admin.
+
+  ## Examples
+
+      iex> is_admin?(user_id)
+      true
+
+      iex> is_admin?(user_id)
+      false
+
+  """
+  def is_admin?(user_id) do
+    profile = get_profile_by_user_id!(user_id)
+    profile.admin
+  end
 end

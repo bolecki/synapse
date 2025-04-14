@@ -13,6 +13,10 @@ defmodule SynapseWeb.Router do
     plug :fetch_current_user
   end
 
+  pipeline :admin do
+    plug :require_admin_user
+  end
+
   pipeline :api do
     plug :accepts, ["json"]
   end
@@ -79,7 +83,15 @@ defmodule SynapseWeb.Router do
       live "/f1-prediction", PredictionLive, :index
       live "/f1-prediction/:id", PredictionLive, :index
       live "/f1-prediction/user/:username/event/:id", PredictionLive, :index
+    end
+  end
 
+  # Admin-only routes
+  scope "/", SynapseWeb do
+    pipe_through [:browser, :require_authenticated_user, :admin]
+
+    live_session :require_admin_user,
+      on_mount: [{SynapseWeb.UserAuth, :ensure_authenticated}, {SynapseWeb.UserAuth, :ensure_admin}] do
       live "/categories", CategoryLive.Index, :index
       live "/categories/new", CategoryLive.Index, :new
       live "/categories/:id/edit", CategoryLive.Index, :edit
