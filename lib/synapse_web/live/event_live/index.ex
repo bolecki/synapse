@@ -66,7 +66,7 @@ defmodule SynapseWeb.EventLive.Index do
 
     event_lookup =
       event.season.events
-      |> Enum.sort(&(&1.id < &2.id))
+      |> Enum.sort(&(DateTime.compare(&1.deadline, &2.deadline) == :lt))
       |> Enum.with_index()
       |> Enum.map(fn {event, index} -> {event.id, index + 1} end)
       |> Map.new()

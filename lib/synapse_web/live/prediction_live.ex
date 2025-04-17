@@ -27,6 +27,8 @@ defmodule SynapseWeb.PredictionLive do
     "Carlos Sainz" => "sky-300"
   }
 
+  def team_colors, do: @color_lookup
+
   @impl true
   def mount(_params, _session, socket) do
     list = [

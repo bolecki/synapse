@@ -87,6 +87,32 @@ defmodule SynapseWeb.ListComponent do
             </div>
           </:actions>
         </.simple_form>
+        <.simple_form
+          :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing}
+          for={%{}}
+          phx-submit="pull-from-previous"
+          phx-target={@myself}
+          class="bg-transparent"
+        >
+          <:actions>
+            <div class="w-full">
+              <.button type="submit" class="w-full !bg-teal-600">Pull Previous Predictions</.button>
+            </div>
+          </:actions>
+        </.simple_form>
+        <.simple_form
+          :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing}
+          for={%{}}
+          phx-submit="pull-from-truths"
+          phx-target={@myself}
+          class="bg-transparent"
+        >
+          <:actions>
+            <div class="w-full">
+              <.button type="submit" class="w-full !bg-teal-600">Pull Previous Results</.button>
+            </div>
+          </:actions>
+        </.simple_form>
       </div>
       <div :if={length(@truths) > 0} class="flex flex-col md:flex-row gap-4 mx-auto max-w-12xl px-4">
         <div class="bg-gray-100 p-4 w-60 rounded-lg space-y-4">
@@ -176,6 +202,160 @@ defmodule SynapseWeb.ListComponent do
 
           {:error, _, _changeset, _} ->
             {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
+        end
+
+      _ ->
+        IO.puts("deadline passed")
+        {:noreply, socket |> put_flash(:error, "Prediction deadline passed.")}
+    end
+  end
+
+  def handle_event("pull-from-previous", _params, socket) do
+    case SynapseWeb.PredictionLive.deadline_in_future?(socket.assigns.event.deadline) do
+      true ->
+        season = Synapse.Admin.get_season!(socket.assigns.event.season_id)
+
+        now = DateTime.utc_now()
+
+        # Split events into upcoming and past based on deadline
+        past_events =
+          season.events
+          |> Enum.filter(fn event ->
+            DateTime.compare(event.deadline, now) == :lt
+          end)
+          |> Enum.sort(&(DateTime.compare(&1.deadline, &2.deadline) == :lt))
+          |> Enum.at(-1)
+
+        IO.inspect(past_events)
+
+        case past_events do
+          nil ->
+            {:noreply, socket |> put_flash(:error, "No past predictions for this season.")}
+
+          past_event ->
+            list = Synapse.Admin.PointsCalculator.calculate_points_single_query(
+              socket.assigns.user.id,
+              past_event.id
+            ).driver_points
+            IO.inspect(list)
+            multi =
+              list
+              |> Enum.with_index()
+              |> Enum.reduce(Multi.new(), fn {prediction, index}, multi ->
+                changeset =
+                  %RankedPrediction{
+                    name: prediction.name,
+                    position: prediction.position,
+                    event_id: socket.assigns.event.id,
+                    user_id: socket.assigns.user.id
+                  }
+                  |> RankedPrediction.changeset(%{})
+
+                Multi.insert(
+                  multi,
+                  "prediction_#{index}",
+                  changeset,
+                  on_conflict: {:replace, [:position]},
+                  conflict_target: [:user_id, :event_id, :name]
+                )
+              end)
+
+            case Repo.transaction(multi) do
+              {:ok, _} ->
+                list =
+                  list
+                  |> Enum.map(fn prediction ->
+                    %{
+                      name: prediction.name,
+                      position: prediction.position - 1,
+                      team_color: SynapseWeb.PredictionLive.team_colors[prediction.name],
+                      points: nil
+                    }
+                  end)
+                  |> Enum.sort(&(&1.position < &2.position))
+                IO.inspect(list)
+                socket = assign(socket, list: list)
+                {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
+
+              {:error, _, _changeset, _} ->
+                {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
+            end
+        end
+
+      _ ->
+        IO.puts("deadline passed")
+        {:noreply, socket |> put_flash(:error, "Prediction deadline passed.")}
+    end
+  end
+
+  def handle_event("pull-from-truths", _params, socket) do
+    case SynapseWeb.PredictionLive.deadline_in_future?(socket.assigns.event.deadline) do
+      true ->
+        season = Synapse.Admin.get_season!(socket.assigns.event.season_id)
+
+        now = DateTime.utc_now()
+
+        # Split events into upcoming and past based on deadline
+        past_events =
+          season.events
+          |> Enum.filter(fn event ->
+            DateTime.compare(event.deadline, now) == :lt
+          end)
+          |> Enum.sort(&(DateTime.compare(&1.deadline, &2.deadline) == :lt))
+          |> Enum.at(-1)
+
+        IO.inspect(past_events)
+
+        case past_events do
+          nil ->
+            {:noreply, socket |> put_flash(:error, "No past predictions for this season.")}
+
+          past_event ->
+            list = Synapse.Admin.get_truths_for_event!(past_event.id)
+            |> Enum.sort(&(&1.position < &2.position))
+            IO.inspect(list)
+            multi =
+              list
+              |> Enum.with_index()
+              |> Enum.reduce(Multi.new(), fn {prediction, index}, multi ->
+                changeset =
+                  %RankedPrediction{
+                    name: prediction.name,
+                    position: prediction.position,
+                    event_id: socket.assigns.event.id,
+                    user_id: socket.assigns.user.id
+                  }
+                  |> RankedPrediction.changeset(%{})
+
+                Multi.insert(
+                  multi,
+                  "prediction_#{index}",
+                  changeset,
+                  on_conflict: {:replace, [:position]},
+                  conflict_target: [:user_id, :event_id, :name]
+                )
+              end)
+
+            case Repo.transaction(multi) do
+              {:ok, _} ->
+                list =
+                  list
+                  |> Enum.map(fn prediction ->
+                    %{
+                      name: prediction.name,
+                      position: prediction.position - 1,
+                      team_color: SynapseWeb.PredictionLive.team_colors[prediction.name],
+                      points: nil
+                    }
+                  end)
+                  |> Enum.sort(&(&1.position < &2.position))
+                IO.inspect(list)
+                socket = assign(socket, list: list)
+                {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
+
+              {:error, _, _changeset, _} ->
+                {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
+            end
         end
 
       _ ->
