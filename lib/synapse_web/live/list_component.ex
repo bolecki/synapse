@@ -74,45 +74,47 @@ defmodule SynapseWeb.ListComponent do
             </div>
           </div>
         </div>
-        <.simple_form
-          :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing}
-          for={%{}}
-          phx-submit="save"
-          phx-target={@myself}
-          class="bg-transparent"
-        >
+        <div>
+          <.simple_form
+            :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing}
+            for={%{}}
+            phx-submit="save"
+            phx-target={@myself}
+            class="bg-transparent simple-form-override"
+          >
           <:actions>
             <div class="w-full">
               <.button type="submit" class="w-full !bg-blue-600">Save</.button>
             </div>
           </:actions>
-        </.simple_form>
-        <.simple_form
-          :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing}
-          for={%{}}
-          phx-submit="pull-from-previous"
-          phx-target={@myself}
-          class="bg-transparent"
-        >
+          </.simple_form>
+          <.simple_form
+            :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing}
+            for={%{}}
+            phx-submit="pull-from-previous"
+            phx-target={@myself}
+            class="bg-transparent simple-form-override"
+          >
           <:actions>
             <div class="w-full">
               <.button type="submit" class="w-full !bg-teal-600">Pull Previous Predictions</.button>
             </div>
           </:actions>
-        </.simple_form>
-        <.simple_form
-          :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing}
-          for={%{}}
-          phx-submit="pull-from-truths"
-          phx-target={@myself}
-          class="bg-transparent"
-        >
+          </.simple_form>
+          <.simple_form
+            :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) and not @viewing}
+            for={%{}}
+            phx-submit="pull-from-truths"
+            phx-target={@myself}
+            class="bg-transparent simple-form-override"
+          >
           <:actions>
             <div class="w-full">
               <.button type="submit" class="w-full !bg-teal-600">Pull Previous Results</.button>
             </div>
           </:actions>
-        </.simple_form>
+          </.simple_form>
+        </div>
       </div>
       <div :if={length(@truths) > 0} class="flex flex-col md:flex-row gap-4 mx-auto max-w-12xl px-4">
         <div class="bg-gray-100 p-4 w-60 rounded-lg space-y-4">
