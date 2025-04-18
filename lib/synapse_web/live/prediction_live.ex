@@ -68,21 +68,23 @@ defmodule SynapseWeb.PredictionLive do
 
     case existing_predictions.driver_points do
       [] ->
-        default
+        {:unsaved, default}
 
       _ ->
-        existing_predictions.driver_points
-        |> Enum.map(fn prediction ->
-          points = if has_truths, do: prediction.points, else: nil
+        predictions =
+          existing_predictions.driver_points
+          |> Enum.map(fn prediction ->
+            points = if has_truths, do: prediction.points, else: nil
 
-          %{
-            name: prediction.name,
-            position: prediction.position - 1,
-            team_color: @color_lookup[prediction.name],
-            points: points
-          }
-        end)
-        |> Enum.sort(&(&1.position < &2.position))
+            %{
+              name: prediction.name,
+              position: prediction.position - 1,
+              team_color: @color_lookup[prediction.name],
+              points: points
+            }
+          end)
+          |> Enum.sort(&(&1.position < &2.position))
+        {:saved, predictions}
     end
   end
 
@@ -128,17 +130,20 @@ defmodule SynapseWeb.PredictionLive do
         _ -> "Your Predictions"
       end
 
+    {status, prediction_list} = get_predictions(socket.assigns.prediction_list, truths, predictions)
+
     {:noreply,
      socket
      |> assign(
        event: event,
        existing_predictions: predictions,
-       prediction_list: get_predictions(socket.assigns.prediction_list, truths, predictions),
+       prediction_list: prediction_list,
        truths: truths,
        leaderboard: leaderboard,
        user: user,
        viewing: Map.has_key?(params, "username"),
-       title: title
+       title: title,
+       status: status
      )}
   end
 
@@ -215,6 +220,7 @@ defmodule SynapseWeb.PredictionLive do
         truths={@truths}
         viewing={@viewing}
         title={@title}
+        status={@status}
       />
     </div>
     <div :if={length(@leaderboard) > 0} class="mt-8 mb-4">

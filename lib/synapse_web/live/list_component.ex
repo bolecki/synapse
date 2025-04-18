@@ -13,9 +13,19 @@ defmodule SynapseWeb.ListComponent do
         class="bg-red-600 bg-blue-600 bg-orange-500 bg-teal-400 bg-sky-600 bg-emerald-600 bg-green-400 bg-gray-400 bg-blue-400 bg-sky-300"
       >
       </div>
-      <div class="bg-gray-100 p-4 rounded-lg flex-1 space-y-4">
+      <div :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) or @status != :unsaved} class="bg-gray-100 p-4 rounded-lg flex-1 space-y-4">
         <.header>
           {@title}
+          {
+            {status_text, status_pill_class} =
+              if @status == :saved,
+                do: {"SAVED", "bg-green-400"},
+                else: {"UNSAVED", "bg-red-400"}
+
+            Phoenix.HTML.raw(
+              "<span class=\"text-xs font-semibold text-white #{status_pill_class} px-2 py-0.5 rounded-full\">#{status_text}</span>"
+            )
+          }
         </.header>
         <div
           id={"#{@id}-items"}
@@ -199,6 +209,7 @@ defmodule SynapseWeb.ListComponent do
 
         case Repo.transaction(multi) do
           {:ok, _} ->
+            socket = assign(socket, status: :saved)
             {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
 
           {:error, _, _changeset, _} ->
@@ -260,47 +271,51 @@ defmodule SynapseWeb.ListComponent do
             # Fetch data using the provided data_fetcher function
             list = data_fetcher.(past_event)
 
-            multi =
-              list
-              |> Enum.with_index()
-              |> Enum.reduce(Multi.new(), fn {prediction, index}, multi ->
-                changeset =
-                  %RankedPrediction{
-                    name: prediction.name,
-                    position: prediction.position,
-                    event_id: socket.assigns.event.id,
-                    user_id: socket.assigns.user.id
-                  }
-                  |> RankedPrediction.changeset(%{})
-
-                Multi.insert(
-                  multi,
-                  "prediction_#{index}",
-                  changeset,
-                  on_conflict: {:replace, [:position]},
-                  conflict_target: [:user_id, :event_id, :name]
-                )
-              end)
-
-            case Repo.transaction(multi) do
-              {:ok, _} ->
-                list =
+            case list do
+              [] -> {:noreply, socket |> put_flash(:error, error_message)}
+              _ ->
+                multi =
                   list
-                  |> Enum.map(fn prediction ->
-                    %{
-                      name: prediction.name,
-                      position: prediction.position - 1,
-                      team_color: SynapseWeb.PredictionLive.team_colors()[prediction.name],
-                      points: nil
-                    }
+                  |> Enum.with_index()
+                  |> Enum.reduce(Multi.new(), fn {prediction, index}, multi ->
+                    changeset =
+                      %RankedPrediction{
+                        name: prediction.name,
+                        position: prediction.position,
+                        event_id: socket.assigns.event.id,
+                        user_id: socket.assigns.user.id
+                      }
+                      |> RankedPrediction.changeset(%{})
+
+                    Multi.insert(
+                      multi,
+                      "prediction_#{index}",
+                      changeset,
+                      on_conflict: {:replace, [:position]},
+                      conflict_target: [:user_id, :event_id, :name]
+                    )
                   end)
-                  |> Enum.sort(&(&1.position < &2.position))
 
-                socket = assign(socket, list: list)
-                {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
+                case Repo.transaction(multi) do
+                  {:ok, _} ->
+                    list =
+                      list
+                      |> Enum.map(fn prediction ->
+                        %{
+                          name: prediction.name,
+                          position: prediction.position - 1,
+                          team_color: SynapseWeb.PredictionLive.team_colors()[prediction.name],
+                          points: nil
+                        }
+                      end)
+                      |> Enum.sort(&(&1.position < &2.position))
 
-              {:error, _, _changeset, _} ->
-                {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
+                    socket = assign(socket, list: list, status: :saved)
+                    {:noreply, socket |> put_flash(:info, "Rankings saved successfully.")}
+
+                  {:error, _, _changeset, _} ->
+                    {:noreply, socket |> put_flash(:error, "Error saving rankings.")}
+                end
             end
         end
 
