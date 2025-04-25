@@ -23,10 +23,13 @@ import {LiveSocket} from "phoenix_live_view"
 import topbar from "../vendor/topbar"
 import Sortable from "../vendor/Sortable";
 import "../vendor/chart.js"
+import GapChart from "./hooks/gap_chart"
 
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 
-let Hooks = {}
+let Hooks = {
+  GapChart
+}
 
 Hooks.CumulativePointsChart = {
   mounted() {

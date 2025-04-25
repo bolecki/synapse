@@ -83,6 +83,9 @@ defmodule SynapseWeb.Router do
       live "/f1-prediction", PredictionLive, :index
       live "/f1-prediction/:id", PredictionLive, :index
       live "/f1-prediction/user/:username/event/:id", PredictionLive, :index
+
+      live "/f1-lap-gaps", LapGapLive, :index
+      live "/f1-lap-gaps/:year/:round", LapGapLive, :index
     end
   end
 
