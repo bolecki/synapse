@@ -7,19 +7,22 @@ defmodule Synapse.Application do
 
   @impl true
   def start(_type, _args) do
+    # Initialize F1Api cache
+    Synapse.F1Api.init_cache()
+
     children = [
+      # Start the Telemetry supervisor
       SynapseWeb.Telemetry,
+      # Start the Ecto repository
       Synapse.Repo,
-      {DNSCluster, query: Application.get_env(:synapse, :dns_cluster_query) || :ignore},
+      # Start the PubSub system
       {Phoenix.PubSub, name: Synapse.PubSub},
-      # Start the Finch HTTP client for sending emails
+      # Start Finch
       {Finch, name: Synapse.Finch},
-      # Start another Finch instance specifically for Swoosh
-      {Finch, name: Swoosh.Finch},
-      # Start a worker by calling: Synapse.Worker.start_link(arg)
-      # {Synapse.Worker, arg},
-      # Start to serve requests, typically the last entry
+      # Start the Endpoint (http/https)
       SynapseWeb.Endpoint
+      # Start a worker by calling: Synapse.Worker.start_link(arg)
+      # {Synapse.Worker, arg}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

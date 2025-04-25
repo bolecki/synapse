@@ -10,7 +10,8 @@ defmodule SynapseWeb.LapGapLive do
       loading: false,
       gap_data: nil,
       error: nil,
-      drivers: []
+      drivers: [],
+      gap_type: "lap_gap" # Default to showing lap gap (can be "lap_gap" or "total_gap")
     )}
   end
 
@@ -32,6 +33,13 @@ defmodule SynapseWeb.LapGapLive do
   def handle_event("load_data", %{"year" => year, "round" => round}, socket) do
     send(self(), {:load_data, year, round})
     {:noreply, assign(socket, loading: true, year: year, round: round)}
+  end
+
+  @impl true
+  def handle_event("toggle_gap_type", _, socket) do
+    # Toggle between lap_gap and total_gap
+    new_gap_type = if socket.assigns.gap_type == "lap_gap", do: "total_gap", else: "lap_gap"
+    {:noreply, assign(socket, gap_type: new_gap_type)}
   end
 
   @impl true
@@ -92,7 +100,23 @@ defmodule SynapseWeb.LapGapLive do
           </div>
         <% else %>
           <%= if @gap_data do %>
-            <div id="gap-chart" class="h-[600px] w-full" phx-update="ignore" phx-hook="GapChart" data-gaps={Jason.encode!(@gap_data)} data-drivers={Jason.encode!(@drivers)}></div>
+            <div class="mb-4">
+              <button phx-click="toggle_gap_type" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <%= if @gap_type == "lap_gap" do %>
+                  Show Total Gap
+                <% else %>
+                  Show Lap Gap
+                <% end %>
+              </button>
+              <span class="ml-2 text-sm text-gray-600">
+                <%= if @gap_type == "lap_gap" do %>
+                  Currently showing: Gap per lap
+                <% else %>
+                  Currently showing: Cumulative gap to leader
+                <% end %>
+              </span>
+            </div>
+            <div id="gap-chart" class="h-[600px] w-full" phx-update="ignore" phx-hook="GapChart" data-gaps={Jason.encode!(@gap_data)} data-drivers={Jason.encode!(@drivers)} data-gap-type={@gap_type}></div>
           <% end %>
         <% end %>
       <% end %>

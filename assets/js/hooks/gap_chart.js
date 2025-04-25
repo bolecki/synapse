@@ -14,6 +14,7 @@ const GapChart = {
     // Parse the data from the data attributes
     const gapData = JSON.parse(this.el.dataset.gaps || "{}");
     const drivers = JSON.parse(this.el.dataset.drivers || "[]");
+    const gapType = this.el.dataset.gapType || "lap_gap"; // Get the gap type (lap_gap or total_gap)
     
     // Destroy existing chart if it exists
     if (this.chartInstance) {
@@ -41,7 +42,8 @@ const GapChart = {
       const driverData = lapNumbers.map(lapNumber => {
         const lapData = gapData[lapNumber];
         const driverGap = lapData.find(d => d.driver_id === driverId);
-        return driverGap ? driverGap.gap : null;
+        // Use either lap_gap or total_gap based on the selected type
+        return driverGap ? driverGap[gapType] : null;
       });
       
       return {
@@ -64,11 +66,16 @@ const GapChart = {
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        elements: {
+          point:{
+              radius: 0
+          }
+        },
         scales: {
           y: {
             title: {
               display: true,
-              text: 'Gap to Leader (seconds)'
+              text: gapType === 'lap_gap' ? 'Gap to Leader per Lap (seconds)' : 'Total Gap to Leader (seconds)'
             },
             beginAtZero: true
           },
@@ -82,7 +89,7 @@ const GapChart = {
         plugins: {
           title: {
             display: true,
-            text: 'F1 Gap to Leader Over Race'
+            text: gapType === 'lap_gap' ? 'F1 Gap to Leader Per Lap' : 'F1 Cumulative Gap to Leader Over Race'
           },
           tooltip: {
             callbacks: {

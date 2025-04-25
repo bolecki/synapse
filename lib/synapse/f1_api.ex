@@ -9,8 +9,17 @@ defmodule Synapse.F1Api do
   alias Synapse.Repo
   alias Ecto.Multi
 
+  @lap_data_cache_table :f1_lap_data_cache
+
+  # Initialize the ETS cache table when the module is loaded
+  @doc false
+  def init_cache do
+    :ets.new(@lap_data_cache_table, [:set, :public, :named_table])
+  end
+
   @doc """
   Fetches all lap data for a specific year and round, handling pagination.
+  Results are cached to avoid repeated API requests for the same data.
 
   ## Parameters
     - year: The year of the race (e.g., "2025")
@@ -21,24 +30,96 @@ defmodule Synapse.F1Api do
     - {:error, reason} - If an error occurs during the request or parsing
   """
   def get_lap_data(year, round) do
-    fetch_all_pages("https://api.jolpi.ca/ergast/f1/#{year}/#{round}/laps/", [])
+    cache_key = "#{year}_#{round}"
+
+    # Try to get data from cache first
+    case get_from_cache(cache_key) do
+      {:ok, cached_data} ->
+        # Return cached data if found
+        {:ok, cached_data}
+
+      :not_found ->
+        # Fetch data from API if not in cache
+        result = fetch_all_pages("https://api.jolpi.ca/ergast/f1/#{year}/#{round}/laps/", [])
+
+        # Store successful results in cache
+        case result do
+          {:ok, data} -> store_in_cache(cache_key, data)
+          _ -> :ok  # Don't cache errors
+        end
+
+        result
+    end
+  end
+
+  @doc """
+  Clears the lap data cache.
+  """
+  def clear_lap_data_cache do
+    :ets.delete_all_objects(@lap_data_cache_table)
+    :ok
+  end
+
+  # Helper function to retrieve data from cache
+  defp get_from_cache(key) do
+    try do
+      case :ets.lookup(@lap_data_cache_table, key) do
+        [{^key, data}] -> {:ok, data}
+        [] -> :not_found
+      end
+    rescue
+      ArgumentError ->
+        # Table doesn't exist yet, initialize it
+        init_cache()
+        :not_found
+    catch
+      :error, :badarg ->
+        # Table doesn't exist yet, initialize it
+        init_cache()
+        :not_found
+    end
+  end
+
+  # Helper function to store data in cache
+  defp store_in_cache(key, data) do
+    try do
+      :ets.insert(@lap_data_cache_table, {key, data})
+      :ok
+    rescue
+      ArgumentError ->
+        # Table doesn't exist yet, initialize it
+        init_cache()
+        :ets.insert(@lap_data_cache_table, {key, data})
+        :ok
+    catch
+      :error, :badarg ->
+        # Table doesn't exist yet, initialize it
+        init_cache()
+        :ets.insert(@lap_data_cache_table, {key, data})
+        :ok
+    end
   end
 
   @doc """
   Calculates the gap in seconds to the leader for each driver at each lap.
+  Maintains a running total of the gap to the leader across all laps.
 
   ## Parameters
     - lap_data: The lap data returned by get_lap_data/2
 
   ## Returns
     - A map with lap numbers as keys and a list of driver gaps as values
+      Each driver entry includes both the lap gap and the total cumulative gap
   """
   def calculate_gaps_to_leader(lap_data) do
     case lap_data do
       {:ok, data} ->
         laps = get_in(data, ["MRData", "RaceTable", "Races", Access.at(0), "Laps"])
 
-        Enum.reduce(laps, %{}, fn lap, acc ->
+        # Initialize an empty map to track cumulative times for each driver
+        initial_acc = %{cumulative_times: %{}, lap_gaps: %{}}
+
+        result = Enum.reduce(laps, initial_acc, fn lap, acc ->
           lap_number = String.to_integer(lap["number"])
           timings = lap["Timings"]
 
@@ -48,37 +129,63 @@ defmodule Synapse.F1Api do
             time_str = timing["time"]
             seconds = convert_time_to_seconds(time_str)
 
+            # Get the driver's cumulative time so far (or 0 if this is their first lap)
+            cumulative_time = Map.get(acc.cumulative_times, driver_id, 0)
+            # Add the current lap time to get the new cumulative time
+            new_cumulative_time = cumulative_time + seconds
+
             %{
               driver_id: driver_id,
               position: String.to_integer(timing["position"]),
-              time: seconds
+              time: seconds,
+              cumulative_time: new_cumulative_time
             }
           end)
 
-          # Find the leader's time
+          # Find the leader's time and cumulative time
           leader = Enum.find(driver_times, fn timing -> timing.position == 1 end)
 
           # Skip laps where we can't find a leader (position 1)
           if leader do
             leader_time = leader.time
+            leader_cumulative_time = leader.cumulative_time
 
-            # Calculate gaps
+            # Calculate gaps for this lap and total gaps
             driver_gaps = Enum.map(driver_times, fn timing ->
-              gap = timing.time - leader_time
+              lap_gap = timing.time - leader_time
+              total_gap = timing.cumulative_time - leader_cumulative_time
 
               %{
                 driver_id: timing.driver_id,
                 position: timing.position,
-                gap: gap
+                lap_gap: lap_gap,
+                total_gap: total_gap
               }
             end)
 
-            Map.put(acc, lap_number, driver_gaps)
+            # Update cumulative times for all drivers
+            updated_cumulative_times = Enum.reduce(driver_times, acc.cumulative_times, fn timing, times_acc ->
+              Map.put(times_acc, timing.driver_id, timing.cumulative_time)
+            end)
+
+            # Add the gaps for this lap to our results
+            updated_lap_gaps = Map.put(acc.lap_gaps, lap_number, driver_gaps)
+
+            # Return updated accumulator
+            %{
+              cumulative_times: updated_cumulative_times,
+              lap_gaps: updated_lap_gaps
+            }
           else
             # Skip this lap if no leader is found
             acc
           end
         end)
+
+        IO.inspect(result.lap_gaps)
+
+        # Return just the lap gaps map from our result
+        result.lap_gaps
 
       {:error, reason} ->
         {:error, reason}
