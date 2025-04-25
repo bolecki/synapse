@@ -3,6 +3,7 @@ defmodule SynapseWeb.PredictionLive do
 
   alias Synapse.Admin
   alias Synapse.Accounts
+  alias Synapse.F1Api
 
   @color_lookup %{
     "Lewis Hamilton" => "red-600",
@@ -86,6 +87,30 @@ defmodule SynapseWeb.PredictionLive do
           |> Enum.sort(&(&1.position < &2.position))
         {:saved, predictions}
     end
+  end
+
+  @impl true
+  def handle_info({:load_lap_data, year, round, component_id}, socket) do
+    case F1Api.get_lap_data(year, round) do
+      {:ok, _} = lap_data ->
+        gap_data = F1Api.calculate_gaps_to_leader(lap_data)
+
+        # Extract unique drivers from the first lap
+        drivers =
+          case gap_data do
+            {:error, _} -> []
+            _ ->
+              first_lap = Map.values(gap_data) |> List.first()
+              if first_lap, do: Enum.map(first_lap, & &1.driver_id), else: []
+          end
+
+        send_update(SynapseWeb.LapGapComponent, id: component_id, loading: false, gap_data: gap_data, drivers: drivers, error: nil)
+
+      {:error, reason} ->
+        send_update(SynapseWeb.LapGapComponent, id: component_id, loading: false, error: reason)
+    end
+
+    {:noreply, socket}
   end
 
   @impl true
@@ -232,6 +257,12 @@ defmodule SynapseWeb.PredictionLive do
         title="Event Leaderboard"
       />
     </div>
+
+    <.live_component
+      id="lap-gap"
+      module={SynapseWeb.LapGapComponent}
+      event={@event}
+    />
     """
   end
 end
