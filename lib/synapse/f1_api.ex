@@ -182,8 +182,6 @@ defmodule Synapse.F1Api do
           end
         end)
 
-        IO.inspect(result.lap_gaps)
-
         # Return just the lap gaps map from our result
         result.lap_gaps
 

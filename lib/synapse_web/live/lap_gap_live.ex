@@ -11,7 +11,7 @@ defmodule SynapseWeb.LapGapLive do
       gap_data: nil,
       error: nil,
       drivers: [],
-      gap_type: "lap_gap" # Default to showing lap gap (can be "lap_gap" or "total_gap")
+      gap_type: "total_gap" # Default to showing total gap (can be "lap_gap" or "total_gap")
     )}
   end
 

@@ -41,9 +41,7 @@ defmodule SynapseWeb.SeasonLive.FormComponent do
 
   @impl true
   def handle_event("validate", %{"season" => season_params}, socket) do
-    IO.inspect(season_params)
     changeset = Admin.change_season(socket.assigns.season, season_params)
-    IO.inspect(changeset)
     {:noreply, assign(socket, form: to_form(changeset, action: :validate))}
   end
 
