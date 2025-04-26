@@ -13,19 +13,20 @@ defmodule SynapseWeb.ListComponent do
         class="bg-red-600 bg-blue-600 bg-orange-500 bg-teal-400 bg-sky-600 bg-emerald-600 bg-green-400 bg-gray-400 bg-blue-400 bg-sky-300"
       >
       </div>
-      <div :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) or @status != :unsaved} class="bg-gray-100 p-4 rounded-lg flex-1 space-y-4">
+      <div
+        :if={SynapseWeb.PredictionLive.deadline_in_future?(@event.deadline) or @status != :unsaved}
+        class="bg-gray-100 p-4 rounded-lg flex-1 space-y-4"
+      >
         <.header>
           {@title}
-          {
-            {status_text, status_pill_class} =
-              if @status == :saved,
-                do: {"SAVED", "bg-green-400"},
-                else: {"UNSAVED", "bg-red-400"}
+          {{status_text, status_pill_class} =
+            if @status == :saved,
+              do: {"SAVED", "bg-green-400"},
+              else: {"UNSAVED", "bg-red-400"}
 
-            Phoenix.HTML.raw(
-              "<span class=\"text-xs font-semibold text-white #{status_pill_class} px-2 py-0.5 rounded-full\">#{status_text}</span>"
-            )
-          }
+          Phoenix.HTML.raw(
+            "<span class=\"text-xs font-semibold text-white #{status_pill_class} px-2 py-0.5 rounded-full\">#{status_text}</span>"
+          )}
         </.header>
         <div
           id={"#{@id}-items"}
@@ -272,7 +273,9 @@ defmodule SynapseWeb.ListComponent do
             list = data_fetcher.(past_event)
 
             case list do
-              [] -> {:noreply, socket |> put_flash(:error, error_message)}
+              [] ->
+                {:noreply, socket |> put_flash(:error, error_message)}
+
               _ ->
                 multi =
                   list

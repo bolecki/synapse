@@ -3,14 +3,16 @@ defmodule SynapseWeb.LapGapComponent do
 
   @impl true
   def update(assigns, socket) do
-    socket = assign(socket,
-      id: assigns.id,
-      loading: Map.get(assigns, :loading, false),
-      gap_data: Map.get(assigns, :gap_data, nil),
-      error: Map.get(assigns, :error, nil),
-      drivers: Map.get(assigns, :drivers, []),
-      gap_type: Map.get(assigns, :gap_type, "total_gap") # Default to showing total gap (can be "lap_gap" or "total_gap")
-    )
+    socket =
+      assign(socket,
+        id: assigns.id,
+        loading: Map.get(assigns, :loading, false),
+        gap_data: Map.get(assigns, :gap_data, nil),
+        error: Map.get(assigns, :error, nil),
+        drivers: Map.get(assigns, :drivers, []),
+        # Default to showing total gap (can be "lap_gap" or "total_gap")
+        gap_type: Map.get(assigns, :gap_type, "total_gap")
+      )
 
     {:ok, socket}
   end
@@ -34,14 +36,31 @@ defmodule SynapseWeb.LapGapComponent do
         </div>
       <% else %>
         <%= if @error do %>
-          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+          <div
+            class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative"
+            role="alert"
+          >
             <strong class="font-bold">Error:</strong>
-            <span class="block sm:inline"><%= @error %></span>
+            <span class="block sm:inline">{@error}</span>
           </div>
         <% else %>
           <%= if @gap_data do %>
+            <div
+              id={"gap-chart-#{@id}"}
+              class="h-[600px] w-full"
+              phx-update="ignore"
+              phx-hook="GapChart"
+              data-gaps={Jason.encode!(@gap_data)}
+              data-drivers={Jason.encode!(@drivers)}
+              data-gap-type={@gap_type}
+            >
+            </div>
             <div class="mb-4">
-              <button phx-click="toggle_gap_type" phx-target={@myself} class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              <button
+                phx-click="toggle_gap_type"
+                phx-target={@myself}
+                class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              >
                 <%= if @gap_type == "lap_gap" do %>
                   Show Total Gap
                 <% else %>
@@ -56,7 +75,6 @@ defmodule SynapseWeb.LapGapComponent do
                 <% end %>
               </span>
             </div>
-            <div id={"gap-chart-#{@id}"} class="h-[600px] w-full" phx-update="ignore" phx-hook="GapChart" data-gaps={Jason.encode!(@gap_data)} data-drivers={Jason.encode!(@drivers)} data-gap-type={@gap_type}></div>
           <% end %>
         <% end %>
       <% end %>

@@ -45,7 +45,8 @@ defmodule Synapse.F1Api do
         # Store successful results in cache
         case result do
           {:ok, data} -> store_in_cache(cache_key, data)
-          _ -> :ok  # Don't cache errors
+          # Don't cache errors
+          _ -> :ok
         end
 
         result
@@ -119,68 +120,72 @@ defmodule Synapse.F1Api do
         # Initialize an empty map to track cumulative times for each driver
         initial_acc = %{cumulative_times: %{}, lap_gaps: %{}}
 
-        result = Enum.reduce(laps, initial_acc, fn lap, acc ->
-          lap_number = String.to_integer(lap["number"])
-          timings = lap["Timings"]
+        result =
+          Enum.reduce(laps, initial_acc, fn lap, acc ->
+            lap_number = String.to_integer(lap["number"])
+            timings = lap["Timings"]
 
-          # Convert lap times to seconds
-          driver_times = Enum.map(timings, fn timing ->
-            driver_id = timing["driverId"]
-            time_str = timing["time"]
-            seconds = convert_time_to_seconds(time_str)
+            # Convert lap times to seconds
+            driver_times =
+              Enum.map(timings, fn timing ->
+                driver_id = timing["driverId"]
+                time_str = timing["time"]
+                seconds = convert_time_to_seconds(time_str)
 
-            # Get the driver's cumulative time so far (or 0 if this is their first lap)
-            cumulative_time = Map.get(acc.cumulative_times, driver_id, 0)
-            # Add the current lap time to get the new cumulative time
-            new_cumulative_time = cumulative_time + seconds
+                # Get the driver's cumulative time so far (or 0 if this is their first lap)
+                cumulative_time = Map.get(acc.cumulative_times, driver_id, 0)
+                # Add the current lap time to get the new cumulative time
+                new_cumulative_time = cumulative_time + seconds
 
-            %{
-              driver_id: driver_id,
-              position: String.to_integer(timing["position"]),
-              time: seconds,
-              cumulative_time: new_cumulative_time
-            }
-          end)
+                %{
+                  driver_id: driver_id,
+                  position: String.to_integer(timing["position"]),
+                  time: seconds,
+                  cumulative_time: new_cumulative_time
+                }
+              end)
 
-          # Find the leader's time and cumulative time
-          leader = Enum.find(driver_times, fn timing -> timing.position == 1 end)
+            # Find the leader's time and cumulative time
+            leader = Enum.find(driver_times, fn timing -> timing.position == 1 end)
 
-          # Skip laps where we can't find a leader (position 1)
-          if leader do
-            leader_time = leader.time
-            leader_cumulative_time = leader.cumulative_time
+            # Skip laps where we can't find a leader (position 1)
+            if leader do
+              leader_time = leader.time
+              leader_cumulative_time = leader.cumulative_time
 
-            # Calculate gaps for this lap and total gaps
-            driver_gaps = Enum.map(driver_times, fn timing ->
-              lap_gap = timing.time - leader_time
-              total_gap = timing.cumulative_time - leader_cumulative_time
+              # Calculate gaps for this lap and total gaps
+              driver_gaps =
+                Enum.map(driver_times, fn timing ->
+                  lap_gap = timing.time - leader_time
+                  total_gap = timing.cumulative_time - leader_cumulative_time
 
+                  %{
+                    driver_id: timing.driver_id,
+                    position: timing.position,
+                    lap_gap: lap_gap,
+                    total_gap: total_gap
+                  }
+                end)
+
+              # Update cumulative times for all drivers
+              updated_cumulative_times =
+                Enum.reduce(driver_times, acc.cumulative_times, fn timing, times_acc ->
+                  Map.put(times_acc, timing.driver_id, timing.cumulative_time)
+                end)
+
+              # Add the gaps for this lap to our results
+              updated_lap_gaps = Map.put(acc.lap_gaps, lap_number, driver_gaps)
+
+              # Return updated accumulator
               %{
-                driver_id: timing.driver_id,
-                position: timing.position,
-                lap_gap: lap_gap,
-                total_gap: total_gap
+                cumulative_times: updated_cumulative_times,
+                lap_gaps: updated_lap_gaps
               }
-            end)
-
-            # Update cumulative times for all drivers
-            updated_cumulative_times = Enum.reduce(driver_times, acc.cumulative_times, fn timing, times_acc ->
-              Map.put(times_acc, timing.driver_id, timing.cumulative_time)
-            end)
-
-            # Add the gaps for this lap to our results
-            updated_lap_gaps = Map.put(acc.lap_gaps, lap_number, driver_gaps)
-
-            # Return updated accumulator
-            %{
-              cumulative_times: updated_cumulative_times,
-              lap_gaps: updated_lap_gaps
-            }
-          else
-            # Skip this lap if no leader is found
-            acc
-          end
-        end)
+            else
+              # Skip this lap if no leader is found
+              acc
+            end
+          end)
 
         # Return just the lap gaps map from our result
         result.lap_gaps
@@ -197,14 +202,18 @@ defmodule Synapse.F1Api do
       1 ->
         # Just seconds
         String.to_float(time_str)
+
       2 ->
         # Minutes and seconds
         [minutes, seconds] = parts
         String.to_integer(minutes) * 60 + String.to_float(seconds)
+
       3 ->
         # Hours, minutes, and seconds
         [hours, minutes, seconds] = parts
-        String.to_integer(hours) * 3600 + String.to_integer(minutes) * 60 + String.to_float(seconds)
+
+        String.to_integer(hours) * 3600 + String.to_integer(minutes) * 60 +
+          String.to_float(seconds)
     end
   end
 
@@ -227,49 +236,63 @@ defmodule Synapse.F1Api do
                 data
               else
                 # Merge the laps data
-                existing_laps = get_in(accumulated_data, ["MRData", "RaceTable", "Races", Access.at(0), "Laps"])
+                existing_laps =
+                  get_in(accumulated_data, ["MRData", "RaceTable", "Races", Access.at(0), "Laps"])
 
                 # Create a map of existing laps by lap number for quick lookup
-                existing_laps_map = Enum.reduce(existing_laps, %{}, fn lap, acc ->
-                  Map.put(acc, lap["number"], lap)
-                end)
+                existing_laps_map =
+                  Enum.reduce(existing_laps, %{}, fn lap, acc ->
+                    Map.put(acc, lap["number"], lap)
+                  end)
 
                 # Process new laps, updating existing ones if the lap number already exists
-                updated_laps = Enum.reduce(laps, existing_laps, fn new_lap, acc ->
-                  lap_number = new_lap["number"]
+                updated_laps =
+                  Enum.reduce(laps, existing_laps, fn new_lap, acc ->
+                    lap_number = new_lap["number"]
 
-                  case Map.get(existing_laps_map, lap_number) do
-                    nil ->
-                      # Lap doesn't exist yet, add it to the list
-                      acc ++ [new_lap]
-                    existing_lap ->
-                      # Lap exists, update the Timings
-                      # Find the index of the existing lap to update it in the accumulator
-                      index = Enum.find_index(acc, fn lap -> lap["number"] == lap_number end)
-                      existing_timings = existing_lap["Timings"]
-                      new_timings = new_lap["Timings"]
+                    case Map.get(existing_laps_map, lap_number) do
+                      nil ->
+                        # Lap doesn't exist yet, add it to the list
+                        acc ++ [new_lap]
 
-                      # Merge timings, updating existing ones if driver already exists
-                      updated_timings = Enum.reduce(new_timings, existing_timings, fn new_timing, timings_acc ->
-                        driver_id = new_timing["driverId"]
+                      existing_lap ->
+                        # Lap exists, update the Timings
+                        # Find the index of the existing lap to update it in the accumulator
+                        index = Enum.find_index(acc, fn lap -> lap["number"] == lap_number end)
+                        existing_timings = existing_lap["Timings"]
+                        new_timings = new_lap["Timings"]
 
-                        case Enum.find_index(timings_acc, fn timing -> timing["driverId"] == driver_id end) do
-                          nil ->
-                            # Driver doesn't exist in this lap yet, add timing
-                            timings_acc ++ [new_timing]
-                          timing_index ->
-                            # Driver exists, update timing
-                            List.replace_at(timings_acc, timing_index, new_timing)
-                        end
-                      end)
+                        # Merge timings, updating existing ones if driver already exists
+                        updated_timings =
+                          Enum.reduce(new_timings, existing_timings, fn new_timing, timings_acc ->
+                            driver_id = new_timing["driverId"]
 
-                      # Update the lap with merged timings
-                      updated_lap = Map.put(existing_lap, "Timings", updated_timings)
-                      List.replace_at(acc, index, updated_lap)
-                  end
-                end)
+                            case Enum.find_index(timings_acc, fn timing ->
+                                   timing["driverId"] == driver_id
+                                 end) do
+                              nil ->
+                                # Driver doesn't exist in this lap yet, add timing
+                                timings_acc ++ [new_timing]
 
-                updated_data = put_in(accumulated_data, ["MRData", "RaceTable", "Races", Access.at(0), "Laps"], updated_laps)
+                              timing_index ->
+                                # Driver exists, update timing
+                                List.replace_at(timings_acc, timing_index, new_timing)
+                            end
+                          end)
+
+                        # Update the lap with merged timings
+                        updated_lap = Map.put(existing_lap, "Timings", updated_timings)
+                        List.replace_at(acc, index, updated_lap)
+                    end
+                  end)
+
+                updated_data =
+                  put_in(
+                    accumulated_data,
+                    ["MRData", "RaceTable", "Races", Access.at(0), "Laps"],
+                    updated_laps
+                  )
+
                 updated_data
               end
 
