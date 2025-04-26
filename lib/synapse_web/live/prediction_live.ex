@@ -30,6 +30,19 @@ defmodule SynapseWeb.PredictionLive do
 
   def team_colors, do: @color_lookup
 
+  # Helper function to get round from event
+  defp get_round_from_event(event) do
+    event_lookup =
+      event.season.events
+      |> Enum.sort(&(DateTime.compare(&1.deadline, &2.deadline) == :lt))
+      |> Enum.with_index()
+      |> Enum.map(fn {event, index} -> {event.id, index + 1} end)
+      |> Map.new()
+
+    round = Map.get(event_lookup, event.id, "1")
+    to_string(round)
+  end
+
   @impl true
   def mount(_params, _session, socket) do
     list = [
@@ -90,7 +103,7 @@ defmodule SynapseWeb.PredictionLive do
   end
 
   @impl true
-  def handle_info({:load_lap_data, year, round, component_id}, socket) do
+  def handle_info({:load_lap_data, year, round}, socket) do
     case F1Api.get_lap_data(year, round) do
       {:ok, _} = lap_data ->
         gap_data = F1Api.calculate_gaps_to_leader(lap_data)
@@ -104,10 +117,10 @@ defmodule SynapseWeb.PredictionLive do
               if first_lap, do: Enum.map(first_lap, & &1.driver_id), else: []
           end
 
-        send_update(SynapseWeb.LapGapComponent, id: component_id, loading: false, gap_data: gap_data, drivers: drivers, error: nil)
+        send_update(SynapseWeb.LapGapComponent, id: "lap-gap", gap_data: gap_data, drivers: drivers, loading: false)
 
       {:error, reason} ->
-        send_update(SynapseWeb.LapGapComponent, id: component_id, loading: false, error: reason)
+        send_update(SynapseWeb.LapGapComponent, id: "lap-gap", error: reason, loading: false)
     end
 
     {:noreply, socket}
@@ -120,6 +133,13 @@ defmodule SynapseWeb.PredictionLive do
         nil -> Admin.get_latest_event!()
         id -> Admin.get_event!(id)
       end
+
+    # Load lap data for the event
+    if connected?(socket) do
+      year = event.season.name
+      round = get_round_from_event(event)
+      send(self(), {:load_lap_data, year, round})
+    end
 
     truths =
       Admin.get_truths_for_event!(event.id)
@@ -170,6 +190,12 @@ defmodule SynapseWeb.PredictionLive do
        title: title,
        status: status
      )}
+  end
+
+  @impl true
+  def handle_event("load_data", %{"year" => year, "round" => round}, socket) do
+    send(self(), {:load_lap_data, year, round})
+    {:noreply, socket}
   end
 
   @impl true
@@ -258,11 +284,31 @@ defmodule SynapseWeb.PredictionLive do
       />
     </div>
 
-    <.live_component
-      id="lap-gap"
-      module={SynapseWeb.LapGapComponent}
-      event={@event}
-    />
+    <div class="mt-8">
+      <div class="mb-6">
+        <h2 class="text-2xl font-bold mb-4">F1 Gap to Leader Visualization</h2>
+        <form phx-submit="load_data" class="flex gap-4 items-end">
+          <div>
+            <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
+            <input type="text" id="year" name="year" value={@event.season.name} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <label for="round" class="block text-sm font-medium text-gray-700">Round</label>
+            <input type="text" id="round" name="round" value={get_round_from_event(@event)} class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500" />
+          </div>
+          <div>
+            <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+              Load Data
+            </button>
+          </div>
+        </form>
+      </div>
+      <.live_component
+        id="lap-gap"
+        module={SynapseWeb.LapGapComponent}
+        loading={true}
+      />
+    </div>
     """
   end
 end
