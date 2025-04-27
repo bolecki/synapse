@@ -112,6 +112,9 @@ const GapChart = {
             display: true,
             text: gapType === 'lap_gap' ? 'F1 Gap to Leader Per Lap' : 'F1 Cumulative Gap to Leader Over Race'
           },
+          legend: {
+            position: 'top'
+          },
           tooltip: {
             callbacks: {
               label: function(context) {
