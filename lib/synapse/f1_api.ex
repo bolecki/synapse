@@ -8,6 +8,7 @@ defmodule Synapse.F1Api do
   alias Synapse.Admin.Season
   alias Synapse.Repo
   alias Ecto.Multi
+  alias Synapse.F1LapData
 
   @lap_data_cache_table :f1_lap_data_cache
 
@@ -20,6 +21,11 @@ defmodule Synapse.F1Api do
   @doc """
   Fetches all lap data for a specific year and round, handling pagination.
   Results are cached to avoid repeated API requests for the same data.
+
+  Data retrieval order:
+  1. Try to get data from in-memory cache
+  2. Try to get data from database
+  3. Fetch data from API if not found in cache or database
 
   ## Parameters
     - year: The year of the race (e.g., "2025")
@@ -39,18 +45,43 @@ defmodule Synapse.F1Api do
         {:ok, cached_data}
 
       :not_found ->
-        # Fetch data from API if not in cache
-        result = fetch_all_pages("https://api.jolpi.ca/ergast/f1/#{year}/#{round}/laps/", [])
+        # Try to get data from database
+        case get_from_database(year, round) do
+          {:ok, db_data} ->
+            # Store in cache and return data from database
+            store_in_cache(cache_key, db_data)
+            {:ok, db_data}
 
-        # Store successful results in cache
-        case result do
-          {:ok, data} -> store_in_cache(cache_key, data)
-          # Don't cache errors
-          _ -> :ok
+          :not_found ->
+            # Fetch data from API if not in cache or database
+            result = fetch_all_pages("https://api.jolpi.ca/ergast/f1/#{year}/#{round}/laps/", [])
+
+            # Store successful results in cache and database
+            case result do
+              {:ok, data} ->
+                store_in_cache(cache_key, data)
+                store_in_database(year, round, data)
+              # Don't cache errors
+              _ -> :ok
+            end
+
+            result
         end
-
-        result
     end
+  end
+
+  # Helper function to retrieve data from database
+  defp get_from_database(year, round) do
+    case F1LapData.get_by_year_and_round(year, round) do
+      nil -> :not_found
+      record -> {:ok, record.data}
+    end
+  end
+
+  # Helper function to store data in database
+  defp store_in_database(year, round, data) do
+    F1LapData.store(year, round, data)
+    :ok
   end
 
   @doc """
