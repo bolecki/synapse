@@ -56,3 +56,15 @@ To set a user as an admin, edit their db record, or use the helper function in a
 $ iex -S mix
 iex(1)> Synapse.Accounts.set_admin(1, true)
 ```
+
+## TODO
+- [ ] Move prediction data to jsonb
+- [ ] Allow predictions over mulitple events
+- [ ] Add more prediction types
+- [ ] Add more categories
+- [ ] Fix season delete
+- [ ] Update event for f1 include visualization
+- [ ] Explain the points system for f1
+- [ ] Make `get_latest_season` and `get_latest_event` take in a category
+- [ ] Make season lists per category
+- [ ] Make event lists per season
