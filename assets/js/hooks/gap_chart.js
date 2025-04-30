@@ -80,7 +80,7 @@ const GapChart = {
     this.chartInstance = new Chart(canvas, {
       type: 'line',
       data: {
-        labels: lapNumbers.map(lap => `Lap ${lap}`),
+        labels: lapNumbers,
         datasets: datasets
       },
       options: {
@@ -113,7 +113,11 @@ const GapChart = {
             text: gapType === 'lap_gap' ? 'F1 Gap to Leader Per Lap' : 'F1 Cumulative Gap to Leader Over Race'
           },
           legend: {
-            position: 'top'
+            position: 'top',
+            labels: {
+              boxHeight: 5,
+              padding: 5
+            }
           },
           tooltip: {
             callbacks: {
